@@ -35,6 +35,11 @@ const User = db.define("user", {
       notEmpty: true,
     },
   },
+  auth0Id: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    unique: true,
+  },
   img: {
     type: DataTypes.STRING,
     allowNull: true,

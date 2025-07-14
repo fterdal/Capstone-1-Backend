@@ -22,6 +22,7 @@ const seed = async () => {
         description: "Rank your favorite animes!",
         participants: 0,
         status: "published",
+        userkey: "user1",
 
       },
       {
@@ -30,12 +31,14 @@ const seed = async () => {
         description: "Rank your favorite movies!",
         participants: 0,
         status: "published",
+        userKey: "user2",
       },
       {
         key: "bbq",
         title: "Best BBQ Item?",
         description: "Rank your favorite BBQ food!",
         status: "published",
+        userKey: "user1"
       },
       {
         key: "authRequired",
@@ -44,6 +47,8 @@ const seed = async () => {
         participants: 0,
         status: "published",
         authRequired: true,
+        userKey: "user2"
+
       },
       {
         key: "restricited",
@@ -52,17 +57,25 @@ const seed = async () => {
         participants: 0,
         status: "published",
         restricted: true,
+        userKey: "user1"
+
       },
     ];
 
     const createdPolls = {};
     const deadline = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
 
+    const userMap = {
+      admin: users[0],
+      user1: users[1],
+      user2: users[2],
+    };
+
     for (const poll of pollData) {
       const created = await Poll.create({
         ...poll,
         deadline,
-        user_id: someUser_id,
+        user_id: userMap[poll.userKey].id,
       })
       createdPolls[poll.key] = created;
       console.log(createdPolls.anime.id)
@@ -131,7 +144,7 @@ const seed = async () => {
       },
       {
         optionText: "Suasage",
-        poll_Id: createdPolls.bbq.id,
+        poll_id: createdPolls.bbq.id,
       },
       {
         optionText: "a",
@@ -171,7 +184,7 @@ const seed = async () => {
     ])
 
     console.log(`👤 Created ${users.length} users`);
-    console.log(`Created ${polls.length} polls`)
+    console.log(`Created ${createdPolls.length} polls`)
 
     // Create more seed data here once you've created your models
     // Seed files are a great way to test your database schema!

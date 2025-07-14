@@ -31,7 +31,7 @@ router.get("/:id", async (req, res) => {
         // include: Ballot,
         // include: BallotRanking,
     });
-    res.status(200).send(Poll);
+    res.status(200).send(poll);
     if (!poll) {
       return res.status(404).json({ error: "Poll not found" });
     }

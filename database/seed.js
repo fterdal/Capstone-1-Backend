@@ -12,7 +12,7 @@ const seed = async () => {
       { username: "user2", passwordHash: User.hashPassword("user222") },
     ]);
 
-    const poll = await Poll.bulkCreate([
+    const polls = await Poll.bulkCreate([
       {
         title: "Best Anime?",
         description: "Rank your favorite animes!",
@@ -66,6 +66,7 @@ const seed = async () => {
     ]);
 
     console.log(`👤 Created ${users.length} users`);
+    console.log(`Created ${polls.length} polls`)
 
     // Create more seed data here once you've created your models
     // Seed files are a great way to test your database schema!

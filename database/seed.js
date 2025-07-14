@@ -1,5 +1,5 @@
 const db = require("./db");
-const { User } = require("./index");
+const { User, Poll } = require("./index");
 
 const seed = async () => {
   try {
@@ -10,6 +10,59 @@ const seed = async () => {
       { username: "admin", passwordHash: User.hashPassword("admin123") },
       { username: "user1", passwordHash: User.hashPassword("user111") },
       { username: "user2", passwordHash: User.hashPassword("user222") },
+    ]);
+
+    const poll = await Poll.bulkCreate([
+      {
+        title: "Best Anime?",
+        description: "Rank your favorite animes!",
+        participants: 0,
+        status: "published",
+        deadline: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
+        authRequired: false,
+        isDisabled: false,
+        restricted: false,
+      },
+      {
+        title: "Best Movie?",
+        description: "Rank your favorite movies!",
+        participants: 0,
+        status: "published",
+        deadline: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
+        authRequired: false,
+        isDisabled: false,
+        restricted: false,
+      },
+      {
+        title: "Best BBQ Item?",
+        description: "Rank your favorite BBQ food!",
+        participants: 0,
+        status: "published",
+        deadline: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
+        authRequired: false,
+        isDisabled: false,
+        restricted: false,
+      },
+      {
+        title: "authRequired true",
+        description: "?",
+        participants: 0,
+        status: "published",
+        deadline: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
+        authRequired: true,
+        isDisabled: false,
+        restricted: false,
+      },
+      {
+        title: "restricted true",
+        description: "Rank your favorite anime of all time!",
+        participants: 0,
+        status: "published",
+        deadline: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
+        authRequired: false,
+        isDisabled: false,
+        restricted: true, 
+      },
     ]);
 
     console.log(`👤 Created ${users.length} users`);

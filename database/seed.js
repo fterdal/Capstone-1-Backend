@@ -1,5 +1,5 @@
 const db = require("./db");
-const { User, Poll } = require("./index");
+const { User, Poll, PollOption } = require("./index");
 
 const seed = async () => {
   try {
@@ -11,6 +11,8 @@ const seed = async () => {
       { username: "user1", passwordHash: User.hashPassword("user111") },
       { username: "user2", passwordHash: User.hashPassword("user222") },
     ]);
+
+
 
     const polls = await Poll.bulkCreate([
       {
@@ -25,20 +27,20 @@ const seed = async () => {
         description: "Rank your favorite movies!",
         participants: 0,
         status: "published",
-        deadline: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), 
+        deadline: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
       },
       {
         title: "Best BBQ Item?",
         description: "Rank your favorite BBQ food!",
         status: "published",
-        deadline: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), 
+        deadline: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
       },
       {
         title: "authRequired true",
         description: "?",
         participants: 0,
         status: "published",
-        deadline: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), 
+        deadline: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
         authRequired: true,
       },
       {
@@ -47,9 +49,91 @@ const seed = async () => {
         participants: 0,
         status: "published",
         deadline: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
-        restricted: true, 
+        restricted: true,
       },
     ]);
+
+
+
+    const PollOptions = await PollOption.bulkCreate([
+      {
+        optionText: "Demon Slayer",
+        position: 1,
+        poll_id: 
+      },
+      {
+        optionText: "One Piece",
+        position: 2,
+      },
+      {
+        optionText: "AOT",
+        position: 3,
+      },
+      {
+        optionText: "Naruto",
+        position: 4,
+      },
+      {
+        optionText: "Devil May Cry",
+        position: 5,
+      },
+      {
+        optionText: "Castlevania",
+        position: 6,
+      },
+      {
+        optionText: ""
+      },
+      {
+        optionText: "One Piece"
+      },
+      {
+        optionText: "One Piece"
+      },
+      {
+        optionText: "One Piece"
+      },
+      {
+        optionText: "One Piece"
+      },
+      {
+        optionText: "One Piece"
+      },
+      {
+        optionText: "One Piece"
+      },
+      {
+        optionText: "One Piece"
+      },
+      {
+        optionText: "One Piece"
+      },
+      {
+        optionText: "One Piece"
+      },
+      {
+        optionText: "One Piece"
+      },
+      {
+        optionText: "One Piece"
+      },
+      {
+        optionText: "One Piece"
+      },
+      {
+        optionText: "One Piece"
+      },
+      {
+        optionText: "One Piece"
+      },
+      {
+        optionText: "One Piece"
+      },
+      {
+        optionText: "One Piece"
+      },
+
+    ])
 
     console.log(`👤 Created ${users.length} users`);
     console.log(`Created ${polls.length} polls`)

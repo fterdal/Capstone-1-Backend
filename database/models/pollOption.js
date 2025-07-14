@@ -18,7 +18,14 @@ const pollOption = db.define("poll", {
         allowNull: true,
     },
     timestamps: true,
-
+    poll_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: 'poll', // refers to poll table
+            key: 'id'
+        }
+    }
 })
 
 module.exports = pollOption;

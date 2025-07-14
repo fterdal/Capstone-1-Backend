@@ -1,5 +1,5 @@
 const db = require("./db");
-const User = require("./models/User");
+const User = require("./models/user");
 const Poll = require("./models/poll");
 
 module.exports = {

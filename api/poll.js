@@ -12,4 +12,18 @@ router.get("/", async (req, res) => {
   }
 });
 
+router.get("/:id", async (req, res) => {
+  try {
+    const poll = await Polls.findByPk(req.params.id);
+    if (!poll) {
+      return res.status(404).json({ error: "Poll not found" });
+    }
+    res.json(poll);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to fetch poll" });
+  }
+});
+
+
 module.exports = router;

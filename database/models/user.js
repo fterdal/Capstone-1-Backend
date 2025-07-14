@@ -3,9 +3,17 @@ const db = require("../db");
 const bcrypt = require("bcrypt");
 
 const User = db.define("user", {
+  userName: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    unique: true,
+    validate: {
+      len: [1, 50]
+    }
+  },
   firstName: {
     type: DataTypes.STRING,
-    allowNull: false,
+    // allowNull: false,
     validate: {
       notEmpty: true,
       len: [1, 50],
@@ -13,7 +21,7 @@ const User = db.define("user", {
   },
   lastName: {
     type: DataTypes.STRING,
-    allowNull: false,
+    // allowNull: false,
     validate: {
       notEmpty: true,
       len: [1, 50],
@@ -21,7 +29,7 @@ const User = db.define("user", {
   },
   email: {
     type: DataTypes.STRING,
-    allowNull: false,
+    // allowNull: false,
     unique: true,
     validate: {
       isEmail: true,
@@ -60,7 +68,7 @@ const User = db.define("user", {
 }, {
   timestamps: true,
   createdAt: 'created_at',
-  updatedAt: false, 
+  updatedAt: false,
 });
 
 // Instance method to check password

@@ -8,9 +8,18 @@ const seed = async () => {
     await db.sync({ force: true }); // Drop and recreate tables
 
     const users = await User.bulkCreate([
-      { username: "admin", passwordHash: User.hashPassword("admin123") },
-      { username: "user1", passwordHash: User.hashPassword("user111") },
-      { username: "user2", passwordHash: User.hashPassword("user222") },
+      {
+        username: "admin",
+        passwordHash: User.hashPassword("admin123"),
+      },
+      {
+        username: "user1",
+        passwordHash: User.hashPassword("user111")
+      },
+      {
+        username: "user2",
+        passwordHash: User.hashPassword("user222")
+      },
     ]);
 
     // deadline: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
@@ -22,7 +31,7 @@ const seed = async () => {
         description: "Rank your favorite animes!",
         participants: 0,
         status: "published",
-        userkey: "user1",
+        userKey: "user1",
 
       },
       {
@@ -184,7 +193,7 @@ const seed = async () => {
     ])
 
     console.log(`👤 Created ${users.length} users`);
-    console.log(`Created ${createdPolls.length} polls`)
+    console.log(`Created ${Object.keys(createdPolls).length} polls`);
 
     // Create more seed data here once you've created your models
     // Seed files are a great way to test your database schema!

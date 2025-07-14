@@ -1,3 +1,4 @@
+const { Pool } = require("pg");
 const db = require("./db");
 const { User, Poll, PollOption } = require("./index");
 
@@ -12,46 +13,59 @@ const seed = async () => {
       { username: "user2", passwordHash: User.hashPassword("user222") },
     ]);
 
+    // deadline: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
 
-
-    const polls = await Poll.bulkCreate([
+    const pollData = [
       {
+        key: "anime",
         title: "Best Anime?",
         description: "Rank your favorite animes!",
         participants: 0,
         status: "published",
-        deadline: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+
       },
       {
+        key: "movie",
         title: "Best Movie?",
         description: "Rank your favorite movies!",
         participants: 0,
         status: "published",
-        deadline: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
       },
       {
+        key: "bbq",
         title: "Best BBQ Item?",
         description: "Rank your favorite BBQ food!",
         status: "published",
-        deadline: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
       },
       {
+        key: "authRequired",
         title: "authRequired true",
         description: "?",
         participants: 0,
         status: "published",
-        deadline: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
         authRequired: true,
       },
       {
+        key: "restricited",
         title: "restricted true",
         description: "Rank your favorite anime of all time!",
         participants: 0,
         status: "published",
-        deadline: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
         restricted: true,
       },
-    ]);
+    ];
+
+    const createdPoll = {};
+    const deadline = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
+
+    for (const poll of pollData) {
+      const created = await Poll.create({
+        ...poll,
+        deadline,
+        user_id: someUser_id,
+      })
+      createdPoll[poll.key] = created;
+    }
 
 
 
@@ -59,7 +73,6 @@ const seed = async () => {
       {
         optionText: "Demon Slayer",
         position: 1,
-        poll_id: 
       },
       {
         optionText: "One Piece",

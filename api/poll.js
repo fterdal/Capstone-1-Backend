@@ -25,5 +25,14 @@ router.get("/:id", async (req, res) => {
   }
 });
 
+router.post("/", async (req, res) => {
+  try {
+    const createPoll = await Polls.create(req.body);
+    res.status(201).send(createPoll);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to create poll" });
+  }
+});
 
 module.exports = router;

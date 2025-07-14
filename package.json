@@ -21,7 +21,8 @@
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
     "pg": "^8.16.2",
-    "sequelize": "^6.37.7"
+    "sequelize": "^6.37.7",
+    "start-dev": "^1.0.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.10"

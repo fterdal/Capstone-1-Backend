@@ -41,7 +41,11 @@ const runApp = async () => {
   try {
     // we have to keep it true, so that schema always matches the code before we happy with it
     await db.sync(); 
+<<<<<<< HEAD
 og("✅ Connected to the database");
+=======
+    console.log("✅ Connected to the database");
+>>>>>>> 142785f (Api Routes for polls)
     app.listen(PORT, () => {
       console.log(`🚀 Server is running on port ${PORT}`);
     });

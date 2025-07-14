@@ -39,7 +39,8 @@ app.use((err, req, res, next) => {
 
 const runApp = async () => {
   try {
-    await db.sync();
+    // we have to keep it true, so that schema always matches the code before we happy with it
+    await db.sync({force: true}); 
     console.log("✅ Connected to the database");
     app.listen(PORT, () => {
       console.log(`🚀 Server is running on port ${PORT}`);

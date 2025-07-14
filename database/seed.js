@@ -18,49 +18,35 @@ const seed = async () => {
         description: "Rank your favorite animes!",
         participants: 0,
         status: "published",
-        deadline: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
-        authRequired: false,
-        isDisabled: false,
-        restricted: false,
+        deadline: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
       },
       {
         title: "Best Movie?",
         description: "Rank your favorite movies!",
         participants: 0,
         status: "published",
-        deadline: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
-        authRequired: false,
-        isDisabled: false,
-        restricted: false,
+        deadline: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), 
       },
       {
         title: "Best BBQ Item?",
         description: "Rank your favorite BBQ food!",
-        participants: 0,
         status: "published",
-        deadline: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
-        authRequired: false,
-        isDisabled: false,
-        restricted: false,
+        deadline: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), 
       },
       {
         title: "authRequired true",
         description: "?",
         participants: 0,
         status: "published",
-        deadline: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
+        deadline: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), 
         authRequired: true,
-        isDisabled: false,
-        restricted: false,
       },
       {
         title: "restricted true",
         description: "Rank your favorite anime of all time!",
         participants: 0,
         status: "published",
-        deadline: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
-        authRequired: false,
-        isDisabled: false,
+        deadline: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
         restricted: true, 
       },
     ]);

@@ -55,7 +55,7 @@ const seed = async () => {
       },
     ];
 
-    const createdPoll = {};
+    const createdPolls = {};
     const deadline = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
 
     for (const poll of pollData) {
@@ -64,8 +64,9 @@ const seed = async () => {
         deadline,
         user_id: someUser_id,
       })
-      createdPoll[poll.key] = created;
-    }
+      createdPolls[poll.key] = created;
+      console.log(createdPolls.anime.id)
+    };
 
 
 
@@ -73,77 +74,98 @@ const seed = async () => {
       {
         optionText: "Demon Slayer",
         position: 1,
+        poll_id: createdPolls.anime.id,
       },
       {
         optionText: "One Piece",
         position: 2,
+        poll_id: createdPolls.anime.id,
       },
       {
         optionText: "AOT",
         position: 3,
+        poll_id: createdPolls.anime.id,
       },
       {
         optionText: "Naruto",
         position: 4,
+        poll_id: createdPolls.anime.id,
       },
       {
         optionText: "Devil May Cry",
         position: 5,
+        poll_id: createdPolls.anime.id,
       },
       {
         optionText: "Castlevania",
         position: 6,
+        poll_id: createdPolls.anime.id,
       },
       {
-        optionText: ""
+        optionText: "Die Hard",
+        poll_id: createdPolls.movie.id
       },
       {
-        optionText: "One Piece"
+        optionText: "Die Hard 2",
+        poll_id: createdPolls.movie.id,
       },
       {
-        optionText: "One Piece"
+        optionText: "Twilight",
+        poll_id: createdPolls.movie.id,
       },
       {
-        optionText: "One Piece"
+        optionText: "Spiderverse",
+        poll_id: createdPolls.movie.id,
       },
       {
-        optionText: "One Piece"
+        optionText: "Pork Ribs",
+        poll_id: createdPolls.bbq.id,
       },
       {
-        optionText: "One Piece"
+        optionText: "Hot Dog",
+        poll_id: createdPolls.bbq.id,
       },
       {
-        optionText: "One Piece"
+        optionText: "Cheeseburger",
+        poll_id: createdPolls.bbq.id,
       },
       {
-        optionText: "One Piece"
+        optionText: "Suasage",
+        poll_Id: createdPolls.bbq.id,
       },
       {
-        optionText: "One Piece"
+        optionText: "a",
+        poll_id: createdPolls.authRequired.id,
       },
       {
-        optionText: "One Piece"
+        optionText: "b",
+        poll_id: createdPolls.authRequired.id,
       },
       {
-        optionText: "One Piece"
+        optionText: "c",
+        poll_id: createdPolls.authRequired.id,
       },
       {
-        optionText: "One Piece"
+        optionText: "d",
+        poll_id: createdPolls.authRequired.id,
       },
       {
-        optionText: "One Piece"
+        optionText: "1",
+        poll_id: createdPolls.restricited.id,
       },
       {
-        optionText: "One Piece"
+        optionText: "2",
+        poll_id: createdPolls.restricited.id,
       },
       {
-        optionText: "One Piece"
+        optionText: "3",
+        poll_id: createdPolls.restricited.id,
+
       },
       {
-        optionText: "One Piece"
-      },
-      {
-        optionText: "One Piece"
+        optionText: "4",
+        poll_id: createdPolls.restricited.id,
+
       },
 
     ])

@@ -21,7 +21,7 @@ const Polls = db.define("polls", {
   },
   description: {
     type: DataTypes.TEXT,
-    allowNull: true,
+    allowNull: false,
   },
   isActive: {
     type: DataTypes.BOOLEAN,

@@ -28,6 +28,19 @@ const User = db.define("user", {
     type: DataTypes.STRING,
     allowNull: true,
   },
+  firstName: {
+  type: DataTypes.STRING,
+  allowNull: true,
+  },
+  lastName: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  profilePicture: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    defaultValue: "https://i.imgur.com/default-avatar.png",
+  },
 });
 
 // Instance method to check password

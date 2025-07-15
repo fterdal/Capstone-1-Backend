@@ -1,4 +1,4 @@
-const {DataTypes} = require('sequelize');
+const { DataTypes } = require('sequelize');
 const db = require('../db');
 
 // define the Poll model
@@ -21,7 +21,7 @@ const Poll = db.define("poll", {
         allowNull: false,
     },
     deadline: {
-        type: DataTypes.TIMESTAMP,
+        type: DataTypes.DATE,
         allowNull: false,
     },
     authRequired: {
@@ -39,7 +39,11 @@ const Poll = db.define("poll", {
         default: false,
         allowNull: false,
     },
-    timestamps: true
-});
+},
+    {
+        timestamps: true,
+        createdAt: "created at",
+
+    });
 
 module.exports = Poll;

@@ -8,12 +8,9 @@ const Polls = db.define("polls", {
     primaryKey: true,
   },
   user_id: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    references: {
-      model: "users",
-      key: "id",
-    },
+  type: DataTypes.INTEGER,
+  allowNull: false,
+  references: { model: 'users', key: 'id' }
   },
   title: {
     type: DataTypes.STRING, 
@@ -21,7 +18,7 @@ const Polls = db.define("polls", {
   },
   description: {
     type: DataTypes.TEXT,
-    allowNull: true,
+    allowNull: false,
   },
   isActive: {
     type: DataTypes.BOOLEAN,

@@ -231,7 +231,7 @@ const seed = async () => {
       },
       {
         voteId: votes[0].id,
-        pollOptionId: optionMap["OnePiece"].id,
+        pollOptionId: optionMap["One Piece"].id,
         rank: 3,
       },
       {

@@ -21,3 +21,5 @@ const Admin = db.define ("admins",
   {
     timestamps: true,
   });
+
+  module.exports = Admin;

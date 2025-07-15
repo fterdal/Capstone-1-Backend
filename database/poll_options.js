@@ -1,7 +1,7 @@
 const { DataTypes } = require("sequelize");
 const db = require("./db");
 
-const PollOptions = db.define("poll options", {
+const PollOptions = db.define("poll_option", {
   id: {
     type: DataTypes.INTEGER,
     autoIncrement: true,
@@ -21,4 +21,4 @@ const PollOptions = db.define("poll options", {
   },
 });
 
-module.exports = PollOption;
+module.exports = PollOptions;

@@ -16,7 +16,7 @@ const Polls = db.define("polls", {
     },
   },
   title: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING, 
     allowNull: false,
   },
   description: {

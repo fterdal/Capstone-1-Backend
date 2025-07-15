@@ -8,7 +8,7 @@ const db = require('../db');
 //   poll_id FK
 //   created_at timestamp
 // }
-const pollOption = db.define("poll", {
+const pollOption = db.define("pollOption", {
     optionText: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -17,15 +17,10 @@ const pollOption = db.define("poll", {
         type: DataTypes.INTEGER,
         allowNull: true,
     },
-    timestamps: true,
-    poll_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-            model: 'poll', // refers to poll table
-            key: 'id'
-        }
+},
+    {
+        timestamps: true,
     }
-})
+)
 
 module.exports = pollOption;

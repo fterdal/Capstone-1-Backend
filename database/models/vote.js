@@ -1,4 +1,4 @@
-const {DataTypes} = require('sequelize');
+const { DataTypes } = require('sequelize');
 const db = require('../db');
 
 // define the Vote model
@@ -16,7 +16,10 @@ const Vote = db.define("vote", {
         type: DataTypes.STRING,
         allowNull: true,   // same as voter token we can use either
     },
-    timestamps: true
-})
+},
+    {
+        timestamps: true,
+    }
+);
 
-module.export = Vote;
+module.exports = Vote;

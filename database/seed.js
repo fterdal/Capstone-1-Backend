@@ -9,15 +9,15 @@ const seed = async () => {
 
     const users = await User.bulkCreate([
       {
-        username: "admin",
+        userName: "admin",
         passwordHash: User.hashPassword("admin123"),
       },
       {
-        username: "user1",
+        userName: "user1",
         passwordHash: User.hashPassword("user111")
       },
       {
-        username: "user2",
+        userName: "user2",
         passwordHash: User.hashPassword("user222")
       },
     ]);
@@ -72,7 +72,7 @@ const seed = async () => {
     ];
 
     const createdPolls = {};
-    const deadline = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
+    const deadline = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000); // 3days
 
     const userMap = {
       admin: users[0],
@@ -87,7 +87,7 @@ const seed = async () => {
         user_id: userMap[poll.userKey].id,
       })
       createdPolls[poll.key] = created;
-      console.log(createdPolls.anime.id)
+      // console.log(createdPolls.anime.id)
     };
 
 
@@ -96,97 +96,97 @@ const seed = async () => {
       {
         optionText: "Demon Slayer",
         position: 1,
-        poll_id: createdPolls.anime.id,
+        pollId: createdPolls.anime.id,
       },
       {
         optionText: "One Piece",
         position: 2,
-        poll_id: createdPolls.anime.id,
+        pollId: createdPolls.anime.id,
       },
       {
         optionText: "AOT",
         position: 3,
-        poll_id: createdPolls.anime.id,
+        pollId: createdPolls.anime.id,
       },
       {
         optionText: "Naruto",
         position: 4,
-        poll_id: createdPolls.anime.id,
+        pollId: createdPolls.anime.id,
       },
       {
         optionText: "Devil May Cry",
         position: 5,
-        poll_id: createdPolls.anime.id,
+        poll_Id: createdPolls.anime.id,
       },
       {
         optionText: "Castlevania",
         position: 6,
-        poll_id: createdPolls.anime.id,
+        pollId: createdPolls.anime.id,
       },
       {
         optionText: "Die Hard",
-        poll_id: createdPolls.movie.id
+        pollId: createdPolls.movie.id
       },
       {
         optionText: "Die Hard 2",
-        poll_id: createdPolls.movie.id,
+        pollId: createdPolls.movie.id,
       },
       {
         optionText: "Twilight",
-        poll_id: createdPolls.movie.id,
+        pollId: createdPolls.movie.id,
       },
       {
         optionText: "Spiderverse",
-        poll_id: createdPolls.movie.id,
+        pollId: createdPolls.movie.id,
       },
       {
         optionText: "Pork Ribs",
-        poll_id: createdPolls.bbq.id,
+        pollId: createdPolls.bbq.id,
       },
       {
         optionText: "Hot Dog",
-        poll_id: createdPolls.bbq.id,
+        pollId: createdPolls.bbq.id,
       },
       {
         optionText: "Cheeseburger",
-        poll_id: createdPolls.bbq.id,
+        pollId: createdPolls.bbq.id,
       },
       {
         optionText: "Suasage",
-        poll_id: createdPolls.bbq.id,
+        pollId: createdPolls.bbq.id,
       },
       {
         optionText: "a",
-        poll_id: createdPolls.authRequired.id,
+        pollId: createdPolls.authRequired.id,
       },
       {
         optionText: "b",
-        poll_id: createdPolls.authRequired.id,
+        pollId: createdPolls.authRequired.id,
       },
       {
         optionText: "c",
-        poll_id: createdPolls.authRequired.id,
+        pollId: createdPolls.authRequired.id,
       },
       {
         optionText: "d",
-        poll_id: createdPolls.authRequired.id,
+        pollId: createdPolls.authRequired.id,
       },
       {
         optionText: "1",
-        poll_id: createdPolls.restricited.id,
+        pollId: createdPolls.restricited.id,
       },
       {
         optionText: "2",
-        poll_id: createdPolls.restricited.id,
+        pollId: createdPolls.restricited.id,
       },
       {
         optionText: "3",
-        poll_id: createdPolls.restricited.id,
+        pollId: createdPolls.restricited.id,
 
       },
       {
         optionText: "4",
-        poll_id: createdPolls.restricited.id,
+        pollId: createdPolls.restricited.id,
 
       },
 

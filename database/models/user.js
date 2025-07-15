@@ -65,11 +65,12 @@ const User = db.define("user", {
     allowNull: false,
     defaultValue: false,
   },
-}, {
-  timestamps: true,
-  createdAt: 'created_at',
-  updatedAt: false,
-});
+},
+  {
+    timestamps: true,
+    createdAt: 'created_at',
+  }
+);
 
 // Instance method to check password
 User.prototype.checkPassword = function (password) {

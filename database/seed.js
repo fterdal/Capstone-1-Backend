@@ -84,7 +84,7 @@ const seed = async () => {
       const created = await Poll.create({
         ...poll,
         deadline,
-        user_id: userMap[poll.userKey].id,
+        userId: userMap[poll.userKey].id,
       })
       createdPolls[poll.key] = created;
       // console.log(createdPolls.anime.id)

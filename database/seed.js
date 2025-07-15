@@ -1,6 +1,6 @@
 const { Pool } = require("pg");
 const db = require("./db");
-const { User, Poll, PollOption } = require("./index");
+const { User, Poll, PollOption, Vote, VotingRank } = require("./index");
 
 const seed = async () => {
   try {
@@ -116,7 +116,7 @@ const seed = async () => {
       {
         optionText: "Devil May Cry",
         position: 5,
-        poll_Id: createdPolls.anime.id,
+        pollId: createdPolls.anime.id,
       },
       {
         optionText: "Castlevania",
@@ -190,11 +190,77 @@ const seed = async () => {
 
       },
 
+    ]);
+
+
+    // vote ---> envelope
+    const votes = await Vote.bulkCreate([
+      {
+        userId: users[1].id,
+        pollId: createdPolls.anime.id
+      },
+      {
+        userId: users[2].id,
+        pollId: createdPolls.movie.id
+      },
+      {
+        userId: users[1].id,
+        pollId: createdPolls.bbq.id
+      },
+      {
+        userId: users[2].id,
+        pollId: createdPolls.authRequired.id
+      },
+      {
+        userId: users[1].id,
+        pollId: createdPolls.restricited.id
+      },
     ])
+
+
+    const optionMap = {};
+    PollOptions.forEach((option) => {
+      optionMap[option.optionText] = option;
+    });
+
+    const ranks = await VotingRank.bulkCreate([
+      {
+        voteId: votes[0].id,
+        pollOptionId: optionMap["Demon Slayer"].id,
+        rank: 1,
+      },
+      {
+        voteId: votes[0].id,
+        pollOptionId: optionMap["One Piece"].id,
+        rank: 3,
+      },
+      {
+        voteId: votes[0].id,
+        pollOptionId: optionMap["AOT"].id,
+        rank: 4,
+      },
+      {
+        voteId: votes[0].id,
+        pollOptionId: optionMap["Devil May Cry"].id,
+        rank: 6
+      },
+      {
+        voteId: votes[0].id,
+        pollOptionId: optionMap["Castlevania"].id,
+        rank: 5
+      },
+      {
+        voteId: votes[0].id,
+        pollOptionId: optionMap["Naruto"].id,
+        rank: 2
+      },
+    ]);
+
+
 
     console.log(`👤 Created ${users.length} users`);
     console.log(`Created ${Object.keys(createdPolls).length} polls`);
-
+    console.log(`🧾 Created ${PollOptions.length} poll options`);
     // Create more seed data here once you've created your models
     // Seed files are a great way to test your database schema!
 

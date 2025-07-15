@@ -194,7 +194,7 @@ const seed = async () => {
     ]);
 
 
-
+    // vote ---> envelope
     const votes = await Vote.bulkCreate([
       {
         userId: users[1].id,
@@ -215,6 +215,44 @@ const seed = async () => {
       {
         userId: users[1].id,
         pollId: createdPolls.restricited.id
+      },
+    ])
+
+    const optionMap = {};
+    PollOptions.forEach((option) => {
+      optionMap[option.optionText] = option;
+    });
+
+    const ranks = await VotingRank.bulkCreate([
+      {
+        voteId: votes[0].id,
+        pollOptionId: optionMap["Demon Slayer"].id,
+        rank: 1,
+      },
+      {
+        voteId: votes[0].id,
+        pollOptionId: optionMap["OnePiece"].id,
+        rank: 3,
+      },
+      {
+        voteId: votes[0].id,
+        pollOptionId: optionMap["AOT"].id,
+        rank: 4,
+      },
+      {
+        voteId: votes[0].id,
+        pollOptionId: optionMap["Devil May Cry"].id,
+        rank: 6
+      },
+      {
+        voteId: votes[0].id,
+        pollOptionId: optionMap["Castlevania"].id,
+        rank: 5
+      },
+      {
+        voteId: votes[0].id,
+        pollOptionId: optionMap["Naruto"].id,
+        rank: 2
       },
     ])
 

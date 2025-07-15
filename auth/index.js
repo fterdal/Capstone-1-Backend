@@ -1,6 +1,7 @@
 const express = require("express");
 const jwt = require("jsonwebtoken");
 const { User } = require("../database");
+const { Op } = require("sequelize");
 
 const router = express.Router();
 
@@ -154,6 +155,92 @@ router.post("/signup", async (req, res) => {
   } catch (error) {
     console.error("Signup error:", error);
     res.sendStatus(500);
+  }
+});
+// Helper function to check if input looks like email
+const looksLikeEmail = (input) => {
+  return input.includes("@");
+};
+
+// Signup with username and password
+router.post("/signup/username", async (req, res) => {
+  try {
+    const { username, password, firstName, lastName } = req.body;
+
+    if (!username || !password) {
+      return res
+        .status(400)
+        .send({ error: "Username and password are required" });
+    }
+
+    if (password.length < 6) {
+      return res
+        .status(400)
+        .send({ error: "Password must be at least 6 characters long" });
+    }
+
+    // Check if input looks like email
+    if (looksLikeEmail(username)) {
+      return res
+        .status(400)
+        .send({
+          error:
+            "Username cannot be an email address. Please use a regular username.",
+        });
+    }
+
+    // Check if username already exists (check both userName and email fields to prevent duplicates)
+    const existingUser = await User.findOne({
+      where: {
+        [Op.or]: [{ userName: username }, { email: username }],
+      },
+    });
+
+    if (existingUser) {
+      return res.status(409).send({ error: "Username already exists" });
+    }
+
+    // Create new user
+    const passwordHash = User.hashPassword(password);
+    const userData = {
+      userName: username,
+      passwordHash,
+      firstName: firstName || null,
+      lastName: lastName || null,
+    };
+
+    const user = await User.create(userData);
+
+    // Generate JWT token
+    const token = jwt.sign(
+      {
+        id: user.id,
+        userName: user.userName,
+        email: user.email,
+      },
+      JWT_SECRET,
+      { expiresIn: "24h" }
+    );
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    });
+
+    res.send({
+      message: "User created successfully with username",
+      user: {
+        id: user.id,
+        userName: user.userName,
+        firstName: user.firstName,
+        lastName: user.lastName,
+      },
+    });
+  } catch (error) {
+    console.error("Username signup error:", error);
+    res.status(500).send({ error: "Internal server error" });
   }
 });
 

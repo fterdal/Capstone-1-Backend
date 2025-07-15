@@ -25,6 +25,22 @@ router.get("/:id", async (req, res) => {
   }
 });
 
+router.patch("/:id", async (req, res) => {
+  try {
+    const poll = await Polls.findByPk(req.params.id);
+    if (!poll) {
+      return res.status(404).json({ error: "Poll not found" });
+    }
+
+    const updatedPoll = await poll.update(req.body);
+    res.send(updatedPoll);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to update poll" });
+  }
+});
+
+
 router.post("/", async (req, res) => {
   try {
     const createPoll = await Polls.create(req.body);
@@ -32,6 +48,20 @@ router.post("/", async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Failed to create poll" });
+  }
+});
+
+router.delete("/:id", async (req, res) => {
+  try {
+    const deletePoll = await Polls.findByPk(req.params.id);
+    if (!deletePoll) {
+      return res.status(404).json({ error: "Poll not found" });
+    }
+    await deletePoll.destroy();
+    res.sendStatus(200);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to delete poll" });
   }
 });
 

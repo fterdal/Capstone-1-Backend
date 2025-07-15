@@ -51,14 +51,8 @@ Vote.belongsTo(Poll, {
 
 // one to many- each vote(ballot) can have many ranked options
 Vote.hasMany(VotingRank, {
-  foreignKey: "voteRankId",
+  foreignKey: "voteId",
 })
-
-
-//one to many- A vote(ballot) can have many ranked options
-VotingRank.belongsTo(Vote, {
-  foreignKey: 'voteId',
-});
 
 
 // many to one - each rank entry belongs to one vote(ballot)

@@ -2,8 +2,6 @@ const db = require("./db");
 const User = require("./models/user");
 const Poll = require("./models/poll");
 const PollOption = require("./models/pollOption");
-const pollOption = require("./models/pollOption");
-
 
 //One to many - user has many polls
 User.hasMany(Poll, {
@@ -19,7 +17,7 @@ Poll.belongsTo(User, {
 // One to many - one Poll has many options
 Poll.hasMany(PollOption, {
   foreignKey: 'pollId',
-  onDelete: "CASCASDE", // delete poll_options if poll is deleted
+  onDelete: "CASCADE", // delete poll_options if poll is deleted
 });
 
 // one to one - Each pollOption belongs to one Poll

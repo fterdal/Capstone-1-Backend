@@ -117,7 +117,7 @@ const seed = async () => {
       {
         optionText: "Devil May Cry",
         position: 5,
-        poll_Id: createdPolls.anime.id,
+        pollId: createdPolls.anime.id,
       },
       {
         optionText: "Castlevania",
@@ -218,6 +218,7 @@ const seed = async () => {
       },
     ])
 
+
     const optionMap = {};
     PollOptions.forEach((option) => {
       optionMap[option.optionText] = option;
@@ -254,13 +255,13 @@ const seed = async () => {
         pollOptionId: optionMap["Naruto"].id,
         rank: 2
       },
-    ])
+    ]);
 
 
 
     console.log(`👤 Created ${users.length} users`);
     console.log(`Created ${Object.keys(createdPolls).length} polls`);
-    console.log(`Created ${pollOption.length} poll options`);
+    console.log(`🧾 Created ${PollOptions.length} poll options`);
     // Create more seed data here once you've created your models
     // Seed files are a great way to test your database schema!
 

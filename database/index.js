@@ -2,7 +2,7 @@ const db = require("./db");
 const User = require("./models/user");
 const Poll = require("./models/poll");
 const PollOption = require("./models/pollOption");
-
+const VotingRank = require("./models/votingRank");
 //One to many - user has many polls
 User.hasMany(Poll, {
   foreignKey: 'userId',
@@ -29,4 +29,5 @@ module.exports = {
   User,
   Poll,
   PollOption,
+  VotingRank,
 };

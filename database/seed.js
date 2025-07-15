@@ -1,6 +1,6 @@
 const { Pool } = require("pg");
 const db = require("./db");
-const { User, Poll, PollOption } = require("./index");
+const { User, Poll, PollOption, VotingRank } = require("./index");
 
 const seed = async () => {
   try {

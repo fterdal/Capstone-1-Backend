@@ -2,8 +2,7 @@ const { DataTypes } = require("sequelize");
 const db = require("./db");
 const bcrypt = require("bcrypt");
 
-const Admin =
-  ("admins",
+const Admin = db.define ("admins",
   {
     id: {
       type: DataTypes.INTEGER,

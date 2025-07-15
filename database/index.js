@@ -4,6 +4,7 @@ const Poll = require("./models/poll");
 const PollOption = require("./models/pollOption");
 const VotingRank = require("./models/votingRank");
 const Vote = require("./models/vote");
+const RestrictedPollAccess = require('./models/restrictedPollAccess')
 
 //One to many - user has many polls
 User.hasMany(Poll, {
@@ -74,4 +75,5 @@ module.exports = {
   PollOption,
   Vote,
   VotingRank,
+  RestrictedPollAccess,
 };

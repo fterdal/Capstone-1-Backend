@@ -1,6 +1,7 @@
 const { Pool } = require("pg");
 const db = require("./db");
-const { User, Poll, PollOption, VotingRank } = require("./index");
+const { User, Poll, PollOption, Vote, VotingRank } = require("./index");
+const pollOption = require("./models/pollOption");
 
 const seed = async () => {
   try {
@@ -190,11 +191,38 @@ const seed = async () => {
 
       },
 
+    ]);
+
+
+
+    const votes = await Vote.bulkCreate([
+      {
+        userId: users[1].id,
+        pollId: createdPolls.anime.id
+      },
+      {
+        userId: users[2].id,
+        pollId: createdPolls.movie.id
+      },
+      {
+        userId: users[1].id,
+        pollId: createdPolls.bbq.id
+      },
+      {
+        userId: users[2].id,
+        pollId: createdPolls.authRequired.id
+      },
+      {
+        userId: users[1].id,
+        pollId: createdPolls.restricited.id
+      },
     ])
+
+
 
     console.log(`👤 Created ${users.length} users`);
     console.log(`Created ${Object.keys(createdPolls).length} polls`);
-
+    console.log(`Created ${pollOption.length} poll options`);
     // Create more seed data here once you've created your models
     // Seed files are a great way to test your database schema!
 

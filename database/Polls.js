@@ -1,6 +1,7 @@
 const { DataTypes } = require("sequelize");
 const db = require("./db");
 
+
 const Polls = db.define("polls", {
   id: {
     type: DataTypes.INTEGER,
@@ -28,12 +29,12 @@ const Polls = db.define("polls", {
   timestamps: true,
 });
 
-Polls.associate = (models) => {
-  Polls.hasMany(models.PollOptions, {
-    foreignKey: "pollId",
-    as: "options",
-    onDelete: "CASCADE",
-  });
-};
+// Polls.associate = (models) => {
+//   Polls.hasMany(models.PollOptions, {
+//     foreignKey: "pollId",
+//     as: "options",
+//     onDelete: "CASCADE",
+//   });
+// };
 
 module.exports = Polls;

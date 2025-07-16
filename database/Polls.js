@@ -29,7 +29,7 @@ const Polls = db.define("polls", {
 });
 
 Polls.associate = (models) => {
-  Polls.hasMany(models.Option, {
+  Polls.hasMany(models.PollOptions, {
     foreignKey: "pollId",
     as: "options",
     onDelete: "CASCADE",

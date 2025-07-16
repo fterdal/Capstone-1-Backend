@@ -16,12 +16,13 @@ router.get("/", async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const poll = await Polls.findByPk(req.params.id, {
-      include: [Option],
+      include: [{ model: PollOption, as: "options" }],
     });
 
     if (!poll) return res.status(404).send({ error: "Poll not found" });
 
-    const totalVotes = poll.options.reduce((sum, opt) => sum + opt.votes, 0);
+    const totalVotes = poll.options.reduce((sum, opt) => sum + (opt.votes || 0), 0);
+
     res.send({
       id: poll.id,
       title: poll.title,
@@ -36,6 +37,7 @@ router.get("/:id", async (req, res) => {
     res.status(500).send({ error: "Server error" });
   }
 });
+
 
 router.patch("/:id", async (req, res) => {
   try {

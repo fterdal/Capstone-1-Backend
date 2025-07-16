@@ -3,7 +3,7 @@ const User = require("./user");
 const Polls = require("./Polls");
 const PollOption = require("./poll_options");
 const Vote = require("./vote")
-const Ballot = require("ballot")
+const Ballot = require("./ballot")
 
 Polls.belongsTo(User);
 User.hasMany(Polls);

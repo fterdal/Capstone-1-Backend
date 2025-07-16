@@ -38,7 +38,11 @@ router.delete("/:id",authenticateJWT, async (req, res) => {
 
         if (!poll) {res.status(404).json({error: "Poll not found"})};
 
-        if (poll.userId !== userId) {res.status(401).json({error: "Unauthorized action"})};
+        if (poll.userId !== userId) {res.status(401).json({error: "Unauthorized action: You do not own this poll"})};
+
+        if (poll.status !== "draft") {res.status(401).json({error: "Unauthorized action: Only draft polls can be deleted"})};
+
+        
 
     }
     catch (error) {

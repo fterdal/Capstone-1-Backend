@@ -9,6 +9,20 @@ const router = express.Router();
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 
+// Passport serialization
+passport.serializeUser((user, done) => {
+  done(null, user.id);
+});
+
+passport.deserializeUser(async (id, done) => {
+  try {
+    const user = await User.findByPk(id);
+    done(null, user);
+  } catch (error) {
+    done(error, null);
+  }
+});
+
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
@@ -58,12 +72,12 @@ passport.use(new GoogleStrategy({
   }));
 
   //OAuth flow
-  router.get("/auth/google", passport.authenticate("google", {
+  router.get("/google", passport.authenticate("google", {
     scope: ["profile", "email"]
   }));
 
   //Handle callback
-  router.get("/auth/google/callback", passport.authenticate("google", {session: false}),
+  router.get("/google/callback", passport.authenticate("google", {session: false}),
     async (req,res) => {
         try {
             let user = req.user;

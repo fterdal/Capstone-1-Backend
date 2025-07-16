@@ -8,9 +8,14 @@ const Ballot = require("./ballot")
 Polls.belongsTo(User);
 User.hasMany(Polls);
 
-
 Polls.hasMany(PollOption);
 PollOption.belongsTo(Polls);
+
+Ballot.belongsTo(Polls);
+Ballot.belongsTo(User);
+
+Vote.belongsTo(PollOption);
+PollOption.hasMany(Vote);
 
 Ballot.hasMany(Vote);
 Vote.belongsTo(Ballot);

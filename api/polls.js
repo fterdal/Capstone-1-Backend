@@ -1,17 +1,21 @@
 const express = require("express");
 const router = express.Router();
 const { Poll } = require("../database");
-
+const { authenticateJWT } = require("../auth")
 // Create poll 
-router.post("/", async (req, res) => {
+router.post("/", authenticateJWT, async (req, res) => {
     try {
-        const poll = req.body;
+        const userId = req.user.id
+        const pollData = req.body;
 
         if (!poll) {
             return res.status(400).json({ error: "Make sure to meet all constraints" });
         }
 
-        const newPoll = await Poll.create(poll);
+        const newPoll = await Poll.create({
+            ...pollData,
+            userId
+        });
         res.status(201).json(newPoll)
     } catch (error) {
         res.status(500).json({

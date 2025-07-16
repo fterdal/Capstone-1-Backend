@@ -1,6 +1,7 @@
 const express = require("express");
 const jwt = require("jsonwebtoken");
 const { User } = require("../database");
+const { Op } = require("sequelize");
 
 const router = express.Router();
 
@@ -133,7 +134,6 @@ router.post("/signup", async (req, res) => {
       {
         id: user.id,
         username: user.username,
-        auth0Id: user.auth0Id,
         email: user.email,
       },
       JWT_SECRET,
@@ -142,7 +142,7 @@ router.post("/signup", async (req, res) => {
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure: true,
+      secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
     });
@@ -153,7 +153,175 @@ router.post("/signup", async (req, res) => {
     });
   } catch (error) {
     console.error("Signup error:", error);
-    res.sendStatus(500);
+    res.status(500).send({ error: "Internal server error" });
+  }
+});
+// Helper function to check if input looks like email
+const looksLikeEmail = (input) => {
+  return input.includes("@");
+};
+
+// Signup with username and password
+router.post("/signup/username", async (req, res) => {
+  try {
+    const { username, password, firstName, lastName } = req.body;
+
+    if (!username || !password) {
+      return res
+        .status(400)
+        .send({ error: "Username and password are required" });
+    }
+
+    if (password.length < 6) {
+      return res
+        .status(400)
+        .send({ error: "Password must be at least 6 characters long" });
+    }
+
+    // Check if input looks like email
+    if (looksLikeEmail(username)) {
+      return res
+        .status(400)
+        .send({
+          error:
+            "Username cannot be an email address. Please use a regular username.",
+        });
+    }
+
+    // Check if username already exists (check both username and email fields to prevent duplicates)
+    const existingUser = await User.findOne({
+      where: {
+        [Op.or]: [{ username }, { email: username }],
+      },
+    });
+
+    if (existingUser) {
+      return res.status(409).send({ error: "Username already exists" });
+    }
+
+    // Create new user
+    const passwordHash = User.hashPassword(password);
+    const userData = {
+      username,
+      passwordHash,
+      firstName: firstName || null,
+      lastName: lastName || null,
+    };
+
+    const user = await User.create(userData);
+
+    // Generate JWT token
+    const token = jwt.sign(
+      {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+      },
+      JWT_SECRET,
+      { expiresIn: "24h" }
+    );
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    });
+
+    res.send({
+      message: "User created successfully with username",
+      user: {
+        id: user.id,
+        username: user.username,
+        firstName: user.firstName,
+        lastName: user.lastName,
+      },
+    });
+  } catch (error) {
+    console.error("Username signup error:", error);
+    res.status(500).send({ error: "Internal server error" });
+  }
+});
+
+// Helper function to validate email format
+const isValidEmail = (email) => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+};
+
+// Signup with email and password
+router.post("/signup/email", async (req, res) => {
+  try {
+    const { email, password, firstName, lastName } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).send({ error: "Email and password are required" });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).send({ error: "Password must be at least 6 characters long" });
+    }
+
+    // Validate email format
+    if (!isValidEmail(email)) {
+      return res.status(400).send({ error: "Please provide a valid email address" });
+    }
+
+    // Check if email already exists (check both email and username fields to prevent duplicates)
+    const existingUser = await User.findOne({
+      where: {
+        [Op.or]: [
+          { email: email },
+          { username: email }
+        ]
+      }
+    });
+
+    if (existingUser) {
+      return res.status(409).send({ error: "Email already exists" });
+    }
+
+    // Create new user
+    const passwordHash = User.hashPassword(password);
+    const userData = {
+      email: email,
+      passwordHash,
+      firstName: firstName || null,
+      lastName: lastName || null
+    };
+
+    const user = await User.create(userData);
+
+    // Generate JWT token
+    const token = jwt.sign(
+      {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+      },
+      JWT_SECRET,
+      { expiresIn: "24h" }
+    );
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    });
+
+    res.send({
+      message: "User created successfully with email",
+      user: {
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+      },
+    });
+  } catch (error) {
+    console.error("Email signup error:", error);
+    res.status(500).send({ error: "Internal server error" });
   }
 });
 
@@ -163,13 +331,19 @@ router.post("/login", async (req, res) => {
     const { username, password } = req.body;
 
     if (!username || !password) {
-      res.status(400).send({ error: "Username and password are required" });
-      return;
+      return res.status(400).send({ error: "Username and password are required" });
     }
 
-    // Find user
-    const user = await User.findOne({ where: { username } });
-    user.checkPassword(password);
+    // Find user by username or email
+    const user = await User.findOne({
+      where: {
+        [Op.or]: [
+          { username },
+          { email: username }
+        ]
+      }
+    });
+
     if (!user) {
       return res.status(401).send({ error: "Invalid credentials" });
     }
@@ -184,7 +358,6 @@ router.post("/login", async (req, res) => {
       {
         id: user.id,
         username: user.username,
-        auth0Id: user.auth0Id,
         email: user.email,
       },
       JWT_SECRET,
@@ -200,11 +373,17 @@ router.post("/login", async (req, res) => {
 
     res.send({
       message: "Login successful",
-      user: { id: user.id, username: user.username },
+      user: { 
+        id: user.id, 
+        username: user.username,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName
+      },
     });
   } catch (error) {
     console.error("Login error:", error);
-    res.sendStatus(500);
+    res.status(500).send({ error: "Internal server error" });
   }
 });
 

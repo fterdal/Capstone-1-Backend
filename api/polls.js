@@ -56,4 +56,21 @@ router.post("/", async (req, res) => {
   }
 });
 
+router.patch("/:id", async (req,res) => {
+  try{
+    consst [updatedRows] = await Poll.update(req.body, {
+      where: {id: req.params.id},
+    });
+    if(updatedRows === 0){
+      return res.status(404).send("Student not found");
+    }
+    const updatedPoll = await Poll.findByPk(req.params.id);
+    res.status(200).send(updatedPoll);
+
+  }catch(error){
+    console.error("Error updating poll:", error);
+    res.status(500).send("Error updating poll");
+  }
+})
+
 module.exports = router;

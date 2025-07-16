@@ -23,3 +23,4 @@ const Ballot = db.define("ballot", {
   },
 });
 
+module.exports = Ballot;

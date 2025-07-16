@@ -1,8 +1,11 @@
+require("dotenv").config();
 const express = require("express");
 const morgan = require("morgan");
 const path = require("path");
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
+const passport = require("passport");
+const session = require("express-session");
 const app = express();
 const apiRouter = require("./api");
 const { router: authRouter } = require("./auth");
@@ -25,6 +28,17 @@ app.use(
 
 // cookie parser middleware
 app.use(cookieParser());
+
+// Session middleware for passport
+app.use(session({
+  secret: process.env.JWT_SECRET || 'your-secret-key',
+  resave: false,
+  saveUninitialized: false
+}));
+
+// Initialize passport
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.use(morgan("dev")); // logging middleware
 app.use(express.static(path.join(__dirname, "public"))); // serve static files from public folder

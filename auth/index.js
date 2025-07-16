@@ -134,6 +134,64 @@ router.post("/signup", async (req, res) => {
       {
         id: user.id,
         username: user.username,
+        auth0Id: user.auth0Id,
+        email: user.email,
+      },
+      JWT_SECRET,
+      { expiresIn: "24h" }
+    );
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "strict",
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    });
+
+    res.send({
+      message: "User created successfully",
+      user: { id: user.id, username: user.username },
+    });
+  } catch (error) {
+    console.error("Signup error:", error);
+    res.sendStatus(500);
+  }
+});
+
+// Login route
+router.post("/login", async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+      res.status(400).send({ error: "Username and password are required" });
+      return;
+    }
+
+    // Find user by username or email
+    const user = await User.findOne({ 
+      where: { 
+        [Op.or]: [
+          { username: username },
+          { email: username }
+        ]
+      } 
+    });
+    if (!user) {
+      return res.status(401).send({ error: "Invalid credentials" });
+    }
+
+    // Check password
+    if (!user.checkPassword(password)) {
+      return res.status(401).send({ error: "Invalid credentials" });
+    }
+
+    // Generate JWT token
+    const token = jwt.sign(
+      {
+        id: user.id,
+        username: user.username,
+        auth0Id: user.auth0Id,
         email: user.email,
       },
       JWT_SECRET,
@@ -148,14 +206,37 @@ router.post("/signup", async (req, res) => {
     });
 
     res.send({
-      message: "User created successfully",
+      message: "Login successful",
       user: { id: user.id, username: user.username },
     });
   } catch (error) {
-    console.error("Signup error:", error);
-    res.status(500).send({ error: "Internal server error" });
+    console.error("Login error:", error);
+    res.sendStatus(500);
   }
 });
+
+// Logout route
+router.post("/logout", (req, res) => {
+  res.clearCookie("token");
+  res.send({ message: "Logout successful" });
+});
+
+// Get current user route (protected)
+router.get("/me", (req, res) => {
+  const token = req.cookies.token;
+
+  if (!token) {
+    return res.send({});
+  }
+
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) {
+      return res.status(403).send({ error: "Invalid or expired token" });
+    }
+    res.send({ user: user });
+  });
+});
+
 // Helper function to check if input looks like email
 const looksLikeEmail = (input) => {
   return input.includes("@");
@@ -324,90 +405,5 @@ router.post("/signup/email", async (req, res) => {
     res.status(500).send({ error: "Internal server error" });
   }
 });
-
-// Login route
-router.post("/login", async (req, res) => {
-  try {
-    const { username, password } = req.body;
-
-    if (!username || !password) {
-      return res.status(400).send({ error: "Username and password are required" });
-    }
-
-    // Find user by username or email
-    const user = await User.findOne({
-      where: {
-        [Op.or]: [
-          { username },
-          { email: username }
-        ]
-      }
-    });
-
-    if (!user) {
-      return res.status(401).send({ error: "Invalid credentials" });
-    }
-
-    // Check password
-    if (!user.checkPassword(password)) {
-      return res.status(401).send({ error: "Invalid credentials" });
-    }
-
-    // Generate JWT token
-    const token = jwt.sign(
-      {
-        id: user.id,
-        username: user.username,
-        email: user.email,
-      },
-      JWT_SECRET,
-      { expiresIn: "24h" }
-    );
-
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours
-    });
-
-    res.send({
-      message: "Login successful",
-      user: { 
-        id: user.id, 
-        username: user.username,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName
-      },
-    });
-  } catch (error) {
-    console.error("Login error:", error);
-    res.status(500).send({ error: "Internal server error" });
-  }
-});
-
-// Logout route
-router.post("/logout", (req, res) => {
-  res.clearCookie("token");
-  res.send({ message: "Logout successful" });
-});
-
-// Get current user route (protected)
-router.get("/me", (req, res) => {
-  const token = req.cookies.token;
-
-  if (!token) {
-    return res.send({});
-  }
-
-  jwt.verify(token, JWT_SECRET, (err, user) => {
-    if (err) {
-      return res.status(403).send({ error: "Invalid or expired token" });
-    }
-    res.send({ user: user });
-  });
-});
-
 
 module.exports = { router, authenticateJWT };

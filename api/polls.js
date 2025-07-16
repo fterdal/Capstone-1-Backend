@@ -27,4 +27,23 @@ router.post("/", authenticateJWT, async (req, res) => {
     }
 })
 
+//delete draft poll
+
+router.delete("/:id",authenticateJWT, async (req, res) => {
+    try{
+        const pollId = req.params.id;
+        const userId = req.user.id;
+
+        const poll = await Poll.findByPk(pollId);
+
+        if (!poll) {res.status(404).json({error: "Poll not found"})};
+
+        
+
+    }
+    catch (error) {
+
+    }
+});
+
 module.exports = router;

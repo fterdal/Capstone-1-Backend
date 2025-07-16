@@ -9,6 +9,9 @@ User.hasMany(Polls);
 Polls.hasMany(PollOption);
 PollOption.belongsTo(Polls);
 
+Ballot.hasMany(Vote);
+Vote.belongsTo(Ballot);
+
 // Polls.hasMany(PollOption, {
 //   foreignKey: "pollId",
 //   as: "options",

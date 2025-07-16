@@ -6,6 +6,7 @@ const {
   PollOption,
   Ballot,
   BallotRanking,
+  sequelize
 } = require("../database");
 
 router.get("/", async (req, res) => {

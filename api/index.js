@@ -4,7 +4,7 @@ const router = express.Router();
 const usersRouter = require("./users");
 const pollsRouter = require("./polls");
 const pollOptionsRouter = require("./pollOptions");
-const ballotRouter = require("./ballots")
+const ballotRouter = require("./ballots");
 
 router.use("/users", usersRouter);
 router.use("/polls", pollsRouter);

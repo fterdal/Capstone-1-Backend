@@ -53,3 +53,8 @@ passport.use(new GoogleStrategy({
         return done(err, null);
     }
   }));
+
+  //OAuth flow
+  router.get("/auth/google", passport.authenticate("google", {
+    scope: ["profile", "email"]
+  }));

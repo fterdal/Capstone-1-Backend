@@ -9,15 +9,15 @@ const seed = async () => {
 
     const users = await User.bulkCreate([
       {
-        userName: "admin",
+        username: "admin",
         passwordHash: User.hashPassword("admin123"),
       },
       {
-        userName: "user1",
+        username: "user1",
         passwordHash: User.hashPassword("user111")
       },
       {
-        userName: "user2",
+        username: "user2",
         passwordHash: User.hashPassword("user222")
       },
     ]);

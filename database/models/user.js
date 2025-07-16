@@ -3,7 +3,7 @@ const db = require("../db");
 const bcrypt = require("bcrypt");
 
 const User = db.define("user", {
-  userName: {
+  username: {
     type: DataTypes.STRING,
     allowNull: true,
     unique: true,

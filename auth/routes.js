@@ -1,8 +1,9 @@
 const express = require('express');
+const jwt = require('jsonwebtoken');
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const { User } = require("../database");
-require('../passport');
+
 
 const router = express.Router();
 
@@ -14,7 +15,7 @@ passport.use(new GoogleStrategy({
     callbackURL: process.env.GOOGLE_CALLBACK_URL
   }, async (accessToken, refreshToken, profile, done) => {
     try {
-        const user = await User.findOne({where: {googleId: profile.id}});
+        let user = await User.findOne({where: {googleId: profile.id}});
 
         if (!user) {
             // Try by email
@@ -52,7 +53,7 @@ passport.use(new GoogleStrategy({
     
         return done(null, user);
     } catch (error) {
-        return done(err, null);
+        return done(error, null);
     }
   }));
 
@@ -65,7 +66,7 @@ passport.use(new GoogleStrategy({
   router.get("/auth/google/callback", passport.authenticate("google", {session: false}),
     async (req,res) => {
         try {
-            const user = req.user;
+            let user = req.user;
 
              // Generate JWT token
                 const token = jwt.sign(

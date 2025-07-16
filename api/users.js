@@ -1,11 +1,11 @@
 const express = require("express");
 const router = express.Router();
-const { User, Poll } = require("../database");
+const { User, Poll, Ballot } = require("../database");
 
 //get all users
 router.get("/", async (req, res) => {
   try {
-    const users = await User.findAll({ include: Poll });
+    const users = await User.findAll({ include: [Poll, Ballot] });
     res.status(200).send(users);
   } catch (error) {
     console.error("Error fetching users: ", error);
@@ -17,7 +17,7 @@ router.get("/", async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const user = await User.findByPk(req.params.id, {
-      include: Poll,
+      include: [Poll, Ballot],
     });
     if (!user) {
       return res.status(404).send("User not found");

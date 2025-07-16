@@ -8,6 +8,15 @@ const Poll = db.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    imageUrl: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      defaultValue:
+        "https://online.eou.edu/wp-content/uploads/2020/10/eou_article_psychology-competitiveness_header.jpg",
+      validate: {
+        isUrl: true,
+      },
+    },
     description: DataTypes.TEXT,
     allowAnonymous: {
       type: DataTypes.BOOLEAN,

@@ -11,6 +11,14 @@ const User = db.define("user", {
       len: [3, 20],
     },
   },
+  imageUrl: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    defaultValue: "https://cdn-icons-png.flaticon.com/512/2528/2528787.png",
+    validate: {
+      isUrl: true,
+    },
+  },
   email: {
     type: DataTypes.STRING,
     allowNull: true,

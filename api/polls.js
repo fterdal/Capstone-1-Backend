@@ -1,11 +1,11 @@
 const express = require("express");
 const router = express.Router();
-const {Poll, User, PollOption, Ballot} = require("../database");
+const { Poll, PollOption, Ballot, BallotRanking } = require("../database");
 
 router.get("/", async (req, res) => {
   try {
-    const polls = await Poll.findAll({   
-        include: PollOption,
+    const polls = await Poll.findAll({
+      include: [PollOption, Ballot],
     });
     console.log(`Found ${polls.length} polls`);
     res.status(200).send(polls);
@@ -21,7 +21,7 @@ router.get("/", async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const poll = await Poll.findByPk(req.params.id, {
-        include: PollOption,
+      include: [PollOption, Ballot],
     });
     res.status(200).send(poll);
     if (!poll) {
@@ -35,7 +35,7 @@ router.get("/:id", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   try {
     const poll = await Poll.findByPk(req.params.id, {
-        include: PollOption,
+      include: [PollOption, Ballot, BallotRanking],
     });
     if (!poll) {
       return res.status(404).json({ error: "poll not found" });

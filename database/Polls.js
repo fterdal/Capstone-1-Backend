@@ -28,4 +28,12 @@ const Polls = db.define("polls", {
   timestamps: true,
 });
 
+Polls.associate = (models) => {
+  Polls.hasMany(models.Option, {
+    foreignKey: "pollId",
+    as: "options",
+    onDelete: "CASCADE",
+  });
+};
+
 module.exports = Polls;

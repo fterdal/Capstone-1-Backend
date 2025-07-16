@@ -120,20 +120,20 @@ router.post("/signup", async (req, res) => {
     }
 
     // Check if user already exists
-    const existingUser = await User.findOne({ where: { userName: username } });
+    const existingUser = await User.findOne({ where: { username } });
     if (existingUser) {
       return res.status(409).send({ error: "Username already exists" });
     }
 
     // Create new user
     const passwordHash = User.hashPassword(password);
-    const user = await User.create({ userName: username, passwordHash });
+    const user = await User.create({ username, passwordHash });
 
     // Generate JWT token
     const token = jwt.sign(
       {
         id: user.id,
-        userName: user.userName,
+        username: user.username,
         email: user.email,
       },
       JWT_SECRET,
@@ -149,7 +149,7 @@ router.post("/signup", async (req, res) => {
 
     res.send({
       message: "User created successfully",
-      user: { id: user.id, userName: user.userName },
+      user: { id: user.id, username: user.username },
     });
   } catch (error) {
     console.error("Signup error:", error);
@@ -188,10 +188,10 @@ router.post("/signup/username", async (req, res) => {
         });
     }
 
-    // Check if username already exists (check both userName and email fields to prevent duplicates)
+    // Check if username already exists (check both username and email fields to prevent duplicates)
     const existingUser = await User.findOne({
       where: {
-        [Op.or]: [{ userName: username }, { email: username }],
+        [Op.or]: [{ username }, { email: username }],
       },
     });
 
@@ -202,7 +202,7 @@ router.post("/signup/username", async (req, res) => {
     // Create new user
     const passwordHash = User.hashPassword(password);
     const userData = {
-      userName: username,
+      username,
       passwordHash,
       firstName: firstName || null,
       lastName: lastName || null,
@@ -214,7 +214,7 @@ router.post("/signup/username", async (req, res) => {
     const token = jwt.sign(
       {
         id: user.id,
-        userName: user.userName,
+        username: user.username,
         email: user.email,
       },
       JWT_SECRET,
@@ -232,7 +232,7 @@ router.post("/signup/username", async (req, res) => {
       message: "User created successfully with username",
       user: {
         id: user.id,
-        userName: user.userName,
+        username: user.username,
         firstName: user.firstName,
         lastName: user.lastName,
       },
@@ -267,12 +267,12 @@ router.post("/signup/email", async (req, res) => {
       return res.status(400).send({ error: "Please provide a valid email address" });
     }
 
-    // Check if email already exists (check both email and userName fields to prevennt ani duplicates)
+    // Check if email already exists (check both email and username fields to prevent duplicates)
     const existingUser = await User.findOne({
       where: {
         [Op.or]: [
           { email: email },
-          { userName: email }
+          { username: email }
         ]
       }
     });
@@ -296,7 +296,7 @@ router.post("/signup/email", async (req, res) => {
     const token = jwt.sign(
       {
         id: user.id,
-        userName: user.userName,
+        username: user.username,
         email: user.email,
       },
       JWT_SECRET,
@@ -338,7 +338,7 @@ router.post("/login", async (req, res) => {
     const user = await User.findOne({
       where: {
         [Op.or]: [
-          { userName: username },
+          { username },
           { email: username }
         ]
       }
@@ -357,7 +357,7 @@ router.post("/login", async (req, res) => {
     const token = jwt.sign(
       {
         id: user.id,
-        userName: user.userName,
+        username: user.username,
         email: user.email,
       },
       JWT_SECRET,
@@ -375,7 +375,7 @@ router.post("/login", async (req, res) => {
       message: "Login successful",
       user: { 
         id: user.id, 
-        userName: user.userName,
+        username: user.username,
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName

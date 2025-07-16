@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { Polls } = require("../database");
+const { Polls, PollOption } = require("../database");
 
 router.get("/", async (req, res) => {
   try {
@@ -12,18 +12,32 @@ router.get("/", async (req, res) => {
   }
 });
 
+// Adjusted poll id logic to include options, more info and vote count
 router.get("/:id", async (req, res) => {
   try {
-    const poll = await Polls.findByPk(req.params.id);
-    if (!poll) {
-      return res.status(404).json({ error: "Poll not found" });
-    }
-    res.json(poll);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Failed to fetch poll" });
+    const poll = await Polls.findByPk(req.params.id, {
+      include: [{ model: PollOption, as: "options" }],
+    });
+
+    if (!poll) return res.status(404).send({ error: "Poll not found" });
+
+    const totalVotes = poll.options.reduce((sum, opt) => sum + (opt.votes || 0), 0);
+
+    res.send({
+      id: poll.id,
+      title: poll.title,
+      description: poll.description,
+      status: poll.status,
+      endTime: poll.endTime,
+      options: poll.options,
+      totalVotes,
+    });
+  } catch (err) {
+    console.error("Error getting poll:", err);
+    res.status(500).send({ error: "Server error" });
   }
 });
+
 
 router.patch("/:id", async (req, res) => {
   try {

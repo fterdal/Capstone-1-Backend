@@ -52,7 +52,7 @@ passport.use(new GoogleStrategy({
             // Ensure username is unique 
             let finalUsername = username;
             let counter = 1;
-            while (await User.findOne({ where: { userName: finalUsername } })) {
+            while (await User.findOne({ where: { username: finalUsername } })) {
               finalUsername = `${username}_${counter}`;
               counter++;
             }
@@ -60,7 +60,7 @@ passport.use(new GoogleStrategy({
             user = await User.create({
               googleId: profile.id,
               email,
-              userName: finalUsername,
+              username: finalUsername,
               passwordHash: null,
             });
           }
@@ -86,7 +86,7 @@ passport.use(new GoogleStrategy({
                 const token = jwt.sign(
                   {
                     id: user.id,
-                    userName: user.userName,
+                    username: user.username,
                     auth0Id: user.auth0Id,
                     email: user.email,
                   },

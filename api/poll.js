@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { Polls, PollOptions } = require("../database");
+const { Polls, PollOption } = require("../database");
 
 router.get("/", async (req, res) => {
   try {

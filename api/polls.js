@@ -2,13 +2,15 @@ const express = require("express");
 const router = express.Router();
 const { Poll } = require("../database");
 const { authenticateJWT } = require("../auth")
+
+
 // Create poll 
 router.post("/", authenticateJWT, async (req, res) => {
     try {
         const userId = req.user.id
         const pollData = req.body;
 
-        if (!poll) {
+        if (!pollData) {
             return res.status(400).json({ error: "Make sure to meet all constraints" });
         }
 

@@ -120,21 +120,20 @@ router.post("/signup", async (req, res) => {
     }
 
     // Check if user already exists
-    const existingUser = await User.findOne({ where: { username } });
+    const existingUser = await User.findOne({ where: { userName: username } });
     if (existingUser) {
       return res.status(409).send({ error: "Username already exists" });
     }
 
     // Create new user
     const passwordHash = User.hashPassword(password);
-    const user = await User.create({ username, passwordHash });
+    const user = await User.create({ userName: username, passwordHash });
 
     // Generate JWT token
     const token = jwt.sign(
       {
         id: user.id,
-        username: user.username,
-        auth0Id: user.auth0Id,
+        userName: user.userName,
         email: user.email,
       },
       JWT_SECRET,
@@ -143,18 +142,18 @@ router.post("/signup", async (req, res) => {
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure: true,
+      secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
     });
 
     res.send({
       message: "User created successfully",
-      user: { id: user.id, username: user.username },
+      user: { id: user.id, userName: user.userName },
     });
   } catch (error) {
     console.error("Signup error:", error);
-    res.sendStatus(500);
+    res.status(500).send({ error: "Internal server error" });
   }
 });
 // Helper function to check if input looks like email
@@ -268,7 +267,7 @@ router.post("/signup/email", async (req, res) => {
       return res.status(400).send({ error: "Please provide a valid email address" });
     }
 
-    // Check if email already exists (check both email and userName fields to prevent duplicates)
+    // Check if email already exists (check both email and userName fields to prevennt ani duplicates)
     const existingUser = await User.findOne({
       where: {
         [Op.or]: [
@@ -332,13 +331,19 @@ router.post("/login", async (req, res) => {
     const { username, password } = req.body;
 
     if (!username || !password) {
-      res.status(400).send({ error: "Username and password are required" });
-      return;
+      return res.status(400).send({ error: "Username and password are required" });
     }
 
-    // Find user
-    const user = await User.findOne({ where: { username } });
-    user.checkPassword(password);
+    // Find user by username or email
+    const user = await User.findOne({
+      where: {
+        [Op.or]: [
+          { userName: username },
+          { email: username }
+        ]
+      }
+    });
+
     if (!user) {
       return res.status(401).send({ error: "Invalid credentials" });
     }
@@ -352,8 +357,7 @@ router.post("/login", async (req, res) => {
     const token = jwt.sign(
       {
         id: user.id,
-        username: user.username,
-        auth0Id: user.auth0Id,
+        userName: user.userName,
         email: user.email,
       },
       JWT_SECRET,
@@ -369,11 +373,17 @@ router.post("/login", async (req, res) => {
 
     res.send({
       message: "Login successful",
-      user: { id: user.id, username: user.username },
+      user: { 
+        id: user.id, 
+        userName: user.userName,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName
+      },
     });
   } catch (error) {
     console.error("Login error:", error);
-    res.sendStatus(500);
+    res.status(500).send({ error: "Internal server error" });
   }
 });
 

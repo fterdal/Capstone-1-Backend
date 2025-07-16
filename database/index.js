@@ -14,11 +14,14 @@ PollOption.belongsTo(Polls);
 Ballot.belongsTo(Polls);
 Ballot.belongsTo(User);
 
+Polls.hasMany(Ballot);
+
 Vote.belongsTo(PollOption);
 PollOption.hasMany(Vote);
 
 Ballot.hasMany(Vote);
 Vote.belongsTo(Ballot);
+
 
 // Polls.hasMany(PollOption, {
 //   foreignKey: "pollId",

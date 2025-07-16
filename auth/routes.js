@@ -52,7 +52,11 @@ passport.use(new GoogleStrategy({
             // Ensure username is unique 
             let finalUsername = username;
             let counter = 1;
+<<<<<<< HEAD
             while (await User.findOne({ where: { username: finalUsername } })) {
+=======
+            while (await User.findOne({ where: { userName: finalUsername } })) {
+>>>>>>> 44ca507 (: fix: trying to reosolve conflict)
               finalUsername = `${username}_${counter}`;
               counter++;
             }
@@ -60,7 +64,11 @@ passport.use(new GoogleStrategy({
             user = await User.create({
               googleId: profile.id,
               email,
+<<<<<<< HEAD
               username: finalUsername,
+=======
+              userName: finalUsername,
+>>>>>>> 44ca507 (: fix: trying to reosolve conflict)
               passwordHash: null,
             });
           }
@@ -86,7 +94,11 @@ passport.use(new GoogleStrategy({
                 const token = jwt.sign(
                   {
                     id: user.id,
+<<<<<<< HEAD
                     username: user.username,
+=======
+                    userName: user.userName,
+>>>>>>> 44ca507 (: fix: trying to reosolve conflict)
                     auth0Id: user.auth0Id,
                     email: user.email,
                   },

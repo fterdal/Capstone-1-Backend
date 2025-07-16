@@ -48,6 +48,11 @@ const User = db.define("user", {
     allowNull: true,
     unique: true,
   },
+  googleId: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    unique: true,
+  },
   img: {
     type: DataTypes.STRING,
     allowNull: true,

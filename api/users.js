@@ -17,7 +17,7 @@ router.get("/", async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const user = await User.findByPk(req.params.id, {
-      include: [Poll, Ballot]
+      include: [Poll, Ballot],
     });
     if (!user) {
       return res.status(404).send("User not found");

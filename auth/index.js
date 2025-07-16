@@ -168,8 +168,15 @@ router.post("/login", async (req, res) => {
       return;
     }
 
-    // Find user
-    const user = await User.findOne({ where: { username } });
+    // Find user by username or email
+    const user = await User.findOne({ 
+      where: { 
+        [Op.or]: [
+          { username: username },
+          { email: username }
+        ]
+      } 
+    });
     if (!user) {
       return res.status(401).send({ error: "Invalid credentials" });
     }

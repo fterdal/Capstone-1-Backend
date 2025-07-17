@@ -3,6 +3,17 @@ const router = express.Router();
 const { Poll, PollOption } = require("../database");
 const { authenticateJWT } = require("../auth")
 
+// Get all Polls
+router.get("/", authenticateJWT, async (req, res) => {
+    const userId = req.user.id;
+
+    try {
+        const userPolls = await Poll.findAll({ where: { userId } });
+        res.json(userPolls);
+    } catch (error) {
+        res.status(500).json({ error: "Failed to get all polls" });
+    }
+});
 
 // Create polls
 router.post("/", authenticateJWT, async (req, res) => {

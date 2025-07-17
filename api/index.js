@@ -11,5 +11,4 @@ router.use("/polls", pollsRouter);
 router.use("/pollOptions", pollOptionsRouter);
 router.use("/ballots", ballotRouter);
 
-
 module.exports = router;

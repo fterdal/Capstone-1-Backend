@@ -8,6 +8,14 @@ const { authenticateJWT } = require("../auth")
 router.post("/", authenticateJWT, async (req, res) => {
     const userId = req.user.id
     const { title, description, deadline, status, options = [] } = req.body;
+
+    if (status === "published" && options.length < 2) {
+        res.status(400).json({
+            error: " 2 options are requires to  publish a poll"
+        })
+    };
+
+
     try {
 
         const newPoll = await Poll.create({

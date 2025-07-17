@@ -48,4 +48,32 @@ const Poll = db.define("poll", {
     }
 );
 
+//slug creation 
+
+function slugify(text) {
+    return text
+      .toString()
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, "-")
+      .replace(/[^\w\-]+/g, "")
+      .replace(/\-\-+/g, "-");
+  }
+  
+  //auto-generate slug
+  Poll.beforeCreate(async (poll) => {
+    if (!poll.slug) {
+        const baseSlug = slugify(poll.title);
+        let uniqueSlug = baseSlug;
+        let counter = 1;
+
+        while (await Poll.findOne({where: {slug: uniqueSlug}})){
+            uniqueSlug = `${baseSlug}-${counter++}`;
+        }
+        poll.slug = uniqueSlug;
+    }
+  })
+
+
+
 module.exports = Poll;

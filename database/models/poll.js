@@ -22,7 +22,7 @@ const Poll = db.define("poll", {
     },
     deadline: {
         type: DataTypes.DATE,
-        allowNull: false,
+        // allowNull: false,
     },
     authRequired: {
         type: DataTypes.BOOLEAN, // allow only user votes if true

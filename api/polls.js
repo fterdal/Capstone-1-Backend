@@ -59,7 +59,7 @@ router.post("/", async (req, res) => {
 router.patch("/:id", async (req, res) => {
   try {
     const [updatedRows] = await Poll.update(req.body, { 
-      where: { id: req.params.id },
+      include: [PollOption],
     });
     if (updatedRows === 0) {
       return res.status(404).send("Poll not found");

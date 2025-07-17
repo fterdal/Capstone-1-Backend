@@ -15,9 +15,7 @@ router.post("/", authenticateJWT, async (req, res) => {
         })
     };
 
-
     try {
-
         const newPoll = await Poll.create({
             title,
             description,
@@ -25,7 +23,6 @@ router.post("/", authenticateJWT, async (req, res) => {
             status,
             userId,
         });
-
         //[opttion1, option2, option3]
         if (options.length > 0) {
             const formattedOptions = options.map(text => ({
@@ -45,10 +42,11 @@ router.post("/", authenticateJWT, async (req, res) => {
             message: "Check that API fields and data are correct"
         })
     }
-})
+});
+
+
 
 //delete draft poll
-
 router.delete("/:id", authenticateJWT, async (req, res) => {
     try {
         const pollId = req.params.id;

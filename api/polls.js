@@ -42,11 +42,13 @@ router.delete("/:id",authenticateJWT, async (req, res) => {
 
         if (poll.status !== "draft") {res.status(401).json({error: "Unauthorized action: Only draft polls can be deleted"})};
 
-        
+        await poll.destroy();
+
+        res.json({message: "Draft poll deleted successfully"});
 
     }
     catch (error) {
-
+        res.status(500).json({error: "Failed to delete draft poll"});
     }
 });
 

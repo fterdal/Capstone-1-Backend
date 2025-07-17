@@ -215,19 +215,27 @@ router.post("/logout", (req, res) => {
 });
 
 // Get current user route (protected)
-router.get("/me", (req, res) => {
+router.get("/me", async (req, res) => {
   const token = req.cookies.token;
 
   if (!token) {
     return res.send({});
   }
 
-  jwt.verify(token, JWT_SECRET, (err, user) => {
-    if (err) {
-      return res.status(403).send({ error: "Invalid or expired token" });
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const user = await User.findByPk(decoded.id, {
+      attributes: { exclude: ['passwordHash'] } 
+    });
+
+    if (!user) {
+      return res.status(404).send({ error: "User not found" });
     }
-    res.send({ user: user });
-  });
+
+    res.send(user);
+  } catch (err) {
+    return res.status(403).send({ error: "Invalid or expired token" });
+  }
 });
 
 module.exports = { router, authenticateJWT };

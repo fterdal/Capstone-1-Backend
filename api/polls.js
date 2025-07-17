@@ -27,4 +27,29 @@ router.post("/", authenticateJWT, async (req, res) => {
     }
 })
 
+//delete draft poll
+
+router.delete("/:id",authenticateJWT, async (req, res) => {
+    try{
+        const pollId = req.params.id;
+        const userId = req.user.id;
+
+        const poll = await Poll.findByPk(pollId);
+
+        if (!poll) {res.status(404).json({error: "Poll not found"})};
+
+        if (poll.userId !== userId) {res.status(401).json({error: "Unauthorized action: You do not own this poll"})};
+
+        if (poll.status !== "draft") {res.status(401).json({error: "Unauthorized action: Only draft polls can be deleted"})};
+
+        await poll.destroy();
+
+        res.json({message: "Draft poll deleted successfully"});
+
+    }
+    catch (error) {
+        res.status(500).json({error: "Failed to delete draft poll"});
+    }
+});
+
 module.exports = router;

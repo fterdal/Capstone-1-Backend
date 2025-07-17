@@ -56,20 +56,18 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.patch("/:id", async (req, res) => {
+router.get("/:id", async (req, res) => {
   try {
-    const [updatedRows] = await Poll.update(req.body, { 
-      where: { id: req.params.id },
+    const poll = await Poll.findByPk(req.params.id, {
+      include: [PollOption, Ballot],
     });
-    if (updatedRows === 0) {
-      return res.status(404).send("Poll not found");
+    if (!poll) { 
+      return res.status(404).json({ error: "Poll not found" });
     }
-    const updatedPoll = await Poll.findByPk(req.params.id);
-    res.status(200).send(updatedPoll);
+    res.status(200).send(poll);
   } catch (error) {
-    console.error("Error updating poll:", error);
-    res.status(500).send("Error updating poll");
+    res.status(500).json({ error: "Failed to fetch poll by id" });
   }
-}); 
+});
 
 module.exports = router;

@@ -71,6 +71,43 @@ router.post("/", async (req, res) => {
   }
 });
 
+// Duplication logic
+router.post("/:id/duplicate", async (req, res) => {
+  try {
+    const originalPoll = await Polls.findByPk(req.params.id, {
+      include: [{ model: PollOption, as: "options" }],
+    });
+
+    if (!originalPoll) return res.status(404).json({ error: "Poll not found" });
+
+    const duplicatedPoll = await Polls.create({
+      user_id: originalPoll.user_id, // or req.user.id if we're using auth
+      title: originalPoll.title + " (Copy)",
+      description: originalPoll.description,
+      status: "draft",
+    });
+
+    const duplicatedOptions = await Promise.all(
+      originalPoll.options.map((opt) =>
+        PollOption.create({
+          text: opt.text,
+          votes: 0,
+          pollId: duplicatedPoll.id,
+        })
+      )
+    );
+
+    res.status(201).json({
+      message: "Poll duplicated successfully",
+      poll: duplicatedPoll,
+      options: duplicatedOptions,
+    });
+  } catch (err) {
+    console.error("Duplicate poll error:", err);
+    res.status(500).json({ error: "Failed to duplicate poll" });
+  }
+});
+
 // Publishing logic and validation added
 router.put("/publish/:id", async (req, res) => {
   try {

@@ -36,6 +36,12 @@ const Poll = db.define("poll", {
         type: DataTypes.BOOLEAN, // only specic users can parcipate if true
         default: false,
     },
+    slug: {
+        type: DataTypes.STRING,
+        unique: true,
+        allowNull: false,
+    },
+      
 },
     {
         timestamps: true,

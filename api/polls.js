@@ -56,17 +56,43 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.get("/:id", async (req, res) => {
+router.patch("/:id", async (req, res) => {
   try {
-    const poll = await Poll.findByPk(req.params.id, {
-      include: [PollOption, Ballot],
-    });
-    if (!poll) { 
-      return res.status(404).json({ error: "Poll not found" });
+    const { pollOptions, ...pollData } = req.body; 
+    
+    const existingPoll = await Poll.findByPk(req.params.id);
+    if (!existingPoll) {
+      return res.status(404).send("Poll not found");
     }
-    res.status(200).send(poll);
+    
+    if (Object.keys(pollData).length > 0) {
+      await Poll.update(pollData, {
+        where: { id: req.params.id },
+      });
+    }
+    
+    if (pollOptions && Array.isArray(pollOptions)) {
+      await PollOption.destroy({
+        where: { poll_id: req.params.id }
+      });
+      
+      const newOptions = pollOptions.map((option, index) => ({
+        text: option.text,
+        position: option.position || index + 1,
+        poll_id: req.params.id
+      }));
+      
+      await PollOption.bulkCreate(newOptions);
+    }
+    
+    const updatedPoll = await Poll.findByPk(req.params.id, {
+      include: [PollOption]
+    });
+    
+    res.status(200).send(updatedPoll);
   } catch (error) {
-    res.status(500).json({ error: "Failed to fetch poll by id" });
+    console.error("Error updating poll:", error);
+    res.status(500).send("Error updating poll");
   }
 });
 

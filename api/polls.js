@@ -21,7 +21,13 @@ router.get("/", async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const poll = await Poll.findByPk(req.params.id, {
-      include: [PollOption, Ballot],
+      include: [
+        PollOption,
+        {
+          model: Ballot,
+          include: [BallotRanking]
+        }
+      ],
     });
     res.status(200).send(poll);
     if (!poll) {

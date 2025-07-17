@@ -21,6 +21,13 @@ router.get("/:id", async (req, res) => {
 
     if (!poll) return res.status(404).send({ error: "Poll not found" });
 
+    // Checking if the poll should transition to "ended"
+    const now = new Date();
+    if (poll.status === "published" && poll.endTime && new Date(poll.endTime) <= now) {
+      poll.status = "ended";
+      await poll.save();
+    }
+
     const totalVotes = poll.options.reduce((sum, opt) => sum + (opt.votes || 0), 0);
 
     res.send({
@@ -28,6 +35,7 @@ router.get("/:id", async (req, res) => {
       title: poll.title,
       description: poll.description,
       status: poll.status,
+      publishedAt: poll.publishedAt, // including this for clarity
       endTime: poll.endTime,
       options: poll.options,
       totalVotes,
@@ -52,6 +60,15 @@ router.patch("/:id", async (req, res) => {
       return res.status(400).json({ error: "Cannot edit a published or ended poll" });
     }
 
+    // Included validation fields
+    const { title, description } = req.body;
+    if (title !== undefined && !title.trim()) {
+      return res.status(400).json({ error: "Title cannot be empty" });
+    }
+    if (description !== undefined && !description.trim()) {
+      return res.status(400).json({ error: "Description cannot be empty" });
+    }
+
     const updatedPoll = await poll.update(req.body);
     res.send(updatedPoll);
   } catch (error) {
@@ -59,6 +76,7 @@ router.patch("/:id", async (req, res) => {
     res.status(500).json({ error: "Failed to update poll" });
   }
 });
+
 
 
 router.post("/", async (req, res) => {
@@ -134,6 +152,26 @@ router.put("/publish/:id", async (req, res) => {
   } catch (err) {
     console.error("Publish error:", err);
     res.status(500).json({ error: "Failed to publish poll" });
+  }
+});
+
+// Manually close the polls
+router.put("/:id/end", async (req, res) => {
+  try {
+    const poll = await Polls.findByPk(req.params.id);
+
+    if (!poll) return res.status(404).json({ error: "Poll not found" });
+    if (poll.status !== "published") {
+      return res.status(400).json({ error: "Only published polls can be ended" });
+    }
+
+    poll.status = "ended";
+    await poll.save();
+
+    res.json({ message: "Poll ended successfully", poll });
+  } catch (error) {
+    console.error("Error ending poll:", error);
+    res.status(500).json({ error: "Failed to end poll" });
   }
 });
 

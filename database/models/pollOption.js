@@ -17,6 +17,10 @@ const pollOption = db.define("pollOption", {
         type: DataTypes.INTEGER,
         allowNull: true,
     },
+    pollId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+    }
 },
     {
         timestamps: true,

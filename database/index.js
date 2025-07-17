@@ -1,10 +1,12 @@
 const db = require("./db");
-const User            = require("./user");
-const Poll            = require("./poll");
-const PollOption      = require("./pollOption");
-const Ballot          = require("./ballot");
-const BallotRanking   = require("./ballotRanking");
+const User = require("./user");
+const Poll = require("./poll");
+const PollOption = require("./pollOption");
+const Ballot = require("./ballot");
+const BallotRanking = require("./ballotRanking");
 const PollAllowedUser = require("./pollAllowedUser");
+const PollResultValue = require("./pollResultValue");
+const PollResult = require("./pollResult");
 
 User.hasMany(Poll, { foreignKey: "creator_id" });
 Poll.belongsTo(User, { as: "creator", foreignKey: "creator_id" });
@@ -23,6 +25,15 @@ BallotRanking.belongsTo(Ballot, { foreignKey: "ballot_id" });
 
 PollOption.hasMany(BallotRanking, { foreignKey: "option_id" });
 BallotRanking.belongsTo(PollOption, { foreignKey: "option_id" });
+
+Poll.hasOne(PollResult, { foreignKey: "poll_id", onDelete: "CASCADE" });
+PollResult.belongsTo(Poll, { foreignKey: "poll_id" });
+
+PollOption.hasMany(PollResultValue, { foreignKey: "option_id" });
+PollResultValue.belongsTo(PollOption, { foreignKey: "option_id" });
+
+PollResult.hasMany(PollResultValue, { foreignKey: "poll_result_id" });
+PollResultValue.belongsTo(PollResult, { foreignKey: "poll_result_id" });
 
 Poll.belongsToMany(User, {
   through: PollAllowedUser,
@@ -43,4 +54,6 @@ module.exports = {
   Ballot,
   BallotRanking,
   PollAllowedUser,
+  PollResult,
+  PollResultValue,
 };

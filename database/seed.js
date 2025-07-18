@@ -30,7 +30,7 @@ const seed = async () => {
         title: "Best Anime?",
         description: "Rank your favorite animes!",
         participants: 0,
-        status: "published",
+        status: "draft",
         userKey: "user1",
 
       },

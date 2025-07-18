@@ -19,7 +19,7 @@ const Ballot = db.define("ballot", {
   },
   submitted_at: {
     type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW, // I'm not sure what to put for this yet
+    defaultValue: DataTypes.NOW, 
   },
 });
 

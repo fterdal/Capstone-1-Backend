@@ -15,6 +15,22 @@ router.get("/", authenticateJWT, async (req, res) => {
     }
 });
 
+//Get all users draft polls 
+router.get("/draft", authenticateJWT, async (req, res) => {
+    const userId = req.user.id;
+    try {
+        const draftPolls = await Poll.findAll({
+            where: {
+                userId,
+                status: "draft",
+            }
+        })
+        res.json(draftPolls)
+    } catch (error) {
+        res.status(500).json({ error: "Failed to get drafted polls" })
+    }
+});
+
 // Get polls by slug
 router.get("/:slug", authenticateJWT, async (req, res) => {
     try {
@@ -35,21 +51,6 @@ router.get("/:slug", authenticateJWT, async (req, res) => {
     }
 });
 
-//Get all users draft polls 
-router.get("/draft", authenticateJWT, async (req, res) => {
-    const userId = req.user.id;
-    try {
-        const draftPolls = await Poll.findAll({
-            where: {
-                userId,
-                status: "draft",
-            }
-        })
-        res.json(draftPolls)
-    } catch (error) {
-        res.status(500).json({ error: "Failed to get drafted polls" })
-    }
-})
 
 // Create polls---------------------------
 router.post("/", authenticateJWT, async (req, res) => {

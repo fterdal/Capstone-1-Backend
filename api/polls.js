@@ -55,9 +55,26 @@ router.delete("/:id", async (req, res) => {
 
 router.post("/", async (req, res) => {
   try {
-    const poll = await Poll.create(req.body);
-    res.status(201).send(poll);
+    const { pollOptions, ...pollData } = req.body;
+    const poll = await Poll.create(pollData);
+    
+    if (pollOptions && Array.isArray(pollOptions) && pollOptions.length > 0) {
+      const options = pollOptions.map((option, index) => ({
+        text: option.text,
+        position: option.position || index + 1,
+        poll_id: poll.id 
+      }));
+
+      await PollOption.bulkCreate(options);
+    }
+  
+    const pollWithOptions = await Poll.findByPk(poll.id, {
+      include: [PollOption]
+    });
+    
+    res.status(201).send(pollWithOptions);
   } catch (error) {
+    console.error("Error creating poll:", error);
     res.status(500).json({ error: "Failed to create a poll" });
   }
 });

@@ -219,22 +219,20 @@ router.get("/me", async (req, res) => {
   const token = req.cookies.token;
 
   if (!token) {
-    return res.send({});
+    return res.status(401).json({});
   }
-
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
     const user = await User.findByPk(decoded.id, {
-      attributes: { exclude: ['passwordHash'] } 
+      attributes: { exclude: ["passwordHash"] },
     });
 
     if (!user) {
-      return res.status(404).send({ error: "User not found" });
+      return res.status(404).json({});
     }
-
-    res.send(user);
+    res.json(user);
   } catch (err) {
-    return res.status(403).send({ error: "Invalid or expired token" });
+    return res.status(403).json({});
   }
 });
 

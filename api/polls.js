@@ -31,8 +31,13 @@ router.get("/draft", authenticateJWT, async (req, res) => {
             message: draftPolls.length === 0
                 ? "There no polls to display"
                 : "Polls successfully retrived",
-            polls: draftPolls,
+            polls: draftPolls, // polls is an array of objects
         }
+
+        specialDelivery.polls.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        specialDelivery.polls.map((poll) => {
+            console.log(poll.createdAt)
+        })
 
         res.status(200).json(specialDelivery);
     } catch (error) {

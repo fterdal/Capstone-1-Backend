@@ -21,11 +21,4 @@ const PollOptions = db.define("poll_option", {
   },
 });
 
-PollOptions.associate = (models) => {
-  PollOptions.belongsTo(models.Polls, {
-    foreignKey: "pollId",
-    as: "poll",
-  });
-};
-
 module.exports = PollOptions;

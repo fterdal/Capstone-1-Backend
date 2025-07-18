@@ -2,39 +2,34 @@ const db = require("./db");
 const User = require("./user");
 const Polls = require("./Polls");
 const PollOption = require("./poll_options");
-const Vote = require("./vote")
-const Ballot = require("./ballot")
+const Vote = require("./vote");
+const Ballot = require("./ballot");
 
-Polls.belongsTo(User);
-User.hasMany(Polls);
+//Bidirectional relationship logic
+// USER ↔ POLLS
+Polls.belongsTo(User, { foreignKey: "user_id" });
+User.hasMany(Polls, { foreignKey: "user_id" });
 
-Polls.hasMany(PollOption);
-PollOption.belongsTo(Polls);
+// POLLS ↔ OPTIONS
+Polls.hasMany(PollOption, {
+  foreignKey: "pollId",
+  as: "options",
+  onDelete: "CASCADE",
+});
+PollOption.belongsTo(Polls, {
+  foreignKey: "pollId",
+  as: "poll",
+});
 
-Ballot.belongsTo(Polls);
-Ballot.belongsTo(User);
-
-Polls.hasMany(Ballot);
-
-Vote.belongsTo(PollOption);
-PollOption.hasMany(Vote);
-
-Ballot.hasMany(Vote);
-Vote.belongsTo(Ballot);
-
-// Polls.hasMany(PollOption, {
-//   foreignKey: "pollId",
-//   as: "options",
-//   onDelete: "CASCADE",
-// });
-
-// PollOption.belongsTo(Polls, {
-//   foreignKey: "pollId",
-//   as: "poll",
-// });
-
-// Polls.associate?.({ PollOption });
-// PollOption.associate?.({ Polls });
+// BALLOT ↔ VOTE
+Ballot.hasMany(Vote, {
+  foreignKey: "ballotId",
+  as: "votes",
+});
+Vote.belongsTo(Ballot, {
+  foreignKey: "ballotId",
+  as: "ballot",
+});
 
 module.exports = {
   db,
@@ -44,4 +39,3 @@ module.exports = {
   Ballot,
   Vote,
 };
-

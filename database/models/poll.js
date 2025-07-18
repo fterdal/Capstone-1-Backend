@@ -71,7 +71,7 @@ function slugify(text) {
   }
   
   //auto-generate slug
-  Poll.beforeCreate(async (poll) => {
+  Poll.beforeValidate(async (poll) => {
     if (!poll.slug) {
         const baseSlug = slugify(poll.title);
         let uniqueSlug = baseSlug;

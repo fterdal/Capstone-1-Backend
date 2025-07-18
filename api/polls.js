@@ -10,7 +10,7 @@ router.post("/", authenticateJWT, async (req, res) => {
     const { title, description, deadline, status, options = [] } = req.body;
 
     if (status === "published" && options.length < 2) {
-        res.status(400).json({
+        return res.status(400).json({
             error: " 2 options are requires to  publish a poll"
         })
     };
@@ -31,12 +31,14 @@ router.post("/", authenticateJWT, async (req, res) => {
             }));
 
             await PollOption.bulkCreate(formattedOptions)
-            res.status(201).json({
-                message: "Poll and options created",
-                poll: newPoll
-            });
+            
         }
+        res.status(201).json({
+            message: "Poll and options created",
+            poll: newPoll
+        });
     } catch (error) {
+         console.error("Poll creation failed:", error);
         res.status(500).json({
             error: "Failed to create poll",
             message: "Check that API fields and data are correct"

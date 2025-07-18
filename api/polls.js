@@ -15,17 +15,32 @@ router.get("/", authenticateJWT, async (req, res) => {
     }
 });
 
-//Get all users draft polls 
+
+
+//Get all draft polls by user
 router.get("/draft", authenticateJWT, async (req, res) => {
     const userId = req.user.id;
     try {
+
         const draftPolls = await Poll.findAll({
             where: {
                 userId,
                 status: "draft",
             }
         })
-        res.json(draftPolls)
+        const specialDelivery = {
+            message: draftPolls.length === 0
+                ? "There no polls to display"
+                : "Polls successfully retrived",
+            polls: draftPolls, // polls is an array of objects
+        }
+
+        specialDelivery.polls.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        specialDelivery.polls.map((poll) => {
+            console.log(poll.createdAt)
+        })
+
+        res.status(200).json(specialDelivery);
     } catch (error) {
         res.status(500).json({ error: "Failed to get drafted polls" })
     }

@@ -59,16 +59,25 @@ function slugify(text) {
       .replace(/[^\w\-]+/g, "")
       .replace(/\-\-+/g, "-");
   }
+
+  // generate a random string
+  function generateRandomString(length = 6) {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+      result += characters.charAt(Math.floor(Math.random() * characters.length));
+    }
+    return result;
+  }
   
   //auto-generate slug
   Poll.beforeCreate(async (poll) => {
     if (!poll.slug) {
         const baseSlug = slugify(poll.title);
         let uniqueSlug = baseSlug;
-        let counter = 1;
 
         while (await Poll.findOne({where: {slug: uniqueSlug}})){
-            uniqueSlug = `${baseSlug}-${counter++}`;
+            uniqueSlug = `${baseSlug}-${generateRandomString()}`;
         }
         poll.slug = uniqueSlug;
     }

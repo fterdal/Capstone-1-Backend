@@ -38,7 +38,7 @@ router.post("/", authenticateJWT, async (req, res) => {
     const { title, description, deadline, status, options = [] } = req.body;
 
     if (status === "published" && options.length < 2) {
-        res.status(400).json({
+        return res.status(400).json({
             error: " 2 options are requires to  publish a poll"
         })
     };
@@ -66,6 +66,7 @@ router.post("/", authenticateJWT, async (req, res) => {
         }
         return res.json(newPoll)
     } catch (error) {
+         console.error("Poll creation failed:", error);
         res.status(500).json({
             error: "Failed to create poll",
             message: "Check that API fields and data are correct"
@@ -151,11 +152,11 @@ router.delete("/:id", authenticateJWT, async (req, res) => {
 
         const poll = await Poll.findByPk(pollId);
 
-        if (!poll) { res.status(404).json({ error: "Poll not found" }) };
+        if (!poll) { return res.status(404).json({ error: "Poll not found" }) };
 
-        if (poll.userId !== userId) { res.status(401).json({ error: "Unauthorized action: You do not own this poll" }) };
+        if (poll.userId !== userId) { return res.status(401).json({ error: "Unauthorized action: You do not own this poll" }) };
 
-        if (poll.status !== "draft") { res.status(401).json({ error: "Unauthorized action: Only draft polls can be deleted" }) };
+        if (poll.status !== "draft") { return res.status(401).json({ error: "Unauthorized action: Only draft polls can be deleted" }) };
 
         await poll.destroy();
 

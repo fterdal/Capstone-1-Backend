@@ -36,10 +36,53 @@ const Poll = db.define("poll", {
         type: DataTypes.BOOLEAN, // only specic users can parcipate if true
         default: false,
     },
+    slug: {
+        type: DataTypes.STRING,
+        unique: true,
+        allowNull: false,
+    },
+      
 },
     {
         timestamps: true,
     }
 );
+
+//slug creation 
+
+function slugify(text) {
+    return text
+      .toString()
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, "-")
+      .replace(/[^\w\-]+/g, "")
+      .replace(/\-\-+/g, "-");
+  }
+
+  // generate a random string
+  function generateRandomString(length = 6) {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+      result += characters.charAt(Math.floor(Math.random() * characters.length));
+    }
+    return result;
+  }
+  
+  //auto-generate slug
+  Poll.beforeValidate(async (poll) => {
+    if (!poll.slug) {
+        const baseSlug = slugify(poll.title);
+        let uniqueSlug = baseSlug;
+
+        while (await Poll.findOne({where: {slug: uniqueSlug}})){
+            uniqueSlug = `${baseSlug}-${generateRandomString()}`;
+        }
+        poll.slug = uniqueSlug;
+    }
+  })
+
+
 
 module.exports = Poll;

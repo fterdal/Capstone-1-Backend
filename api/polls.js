@@ -15,6 +15,25 @@ router.get("/", authenticateJWT, async (req, res) => {
     }
 });
 
+// Get polls by slug
+router.get("/:slug", authenticateJWT, async (req, res) => {
+    try {
+        const pollSlug = req.params.slug;
+        const poll = await Poll.findOne({
+            where: { slug: pollSlug },
+            include: [{
+                model: PollOption,
+            }]
+        });
+
+        if (!poll) { return res.status(404).json({ error: "Poll not found" }) };
+        res.json(poll);
+       
+    }
+    catch (error) {
+        res.status(500).json({ error: "Failed to get poll" });
+    }
+});
 
 //Get all users draft polls 
 router.get("/draft", authenticateJWT, async (req, res) => {

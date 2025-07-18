@@ -31,6 +31,25 @@ Vote.belongsTo(Ballot, {
   as: "ballot",
 });
 
+Ballot.belongsTo(Polls, {
+  foreignKey: "poll_id",
+  as: "poll",
+});
+
+Ballot.belongsTo(User, {
+  foreignKey: "user_id",
+  as: "user",
+});
+
+Vote.belongsTo(PollOption, {
+  foreignKey: "pollOptionId",
+  as: "option",
+});
+PollOption.hasMany(Vote, {
+  foreignKey: "pollOptionId",
+  as: "votes",
+});
+
 module.exports = {
   db,
   User,

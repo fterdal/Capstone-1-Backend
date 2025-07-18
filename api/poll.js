@@ -28,6 +28,10 @@ router.get("/:id", async (req, res) => {
       await poll.save();
     }
 
+    //issue in creating the options from the polls themselves, do it as a separate functions in the router.post
+    // for options and not just for polls
+    
+
     const totalVotes = poll.options.reduce((sum, opt) => sum + (opt.votes || 0), 0);
 
     res.send({
@@ -125,6 +129,44 @@ router.post("/:id/duplicate", async (req, res) => {
     res.status(500).json({ error: "Failed to duplicate poll" });
   }
 });
+
+router.post("/:id/options", async (req, res) => {
+  try {
+    const { id: pollId } = req.params;
+    const { text } = req.body;
+
+    // Validate text
+    if (!text || !text.trim()) {
+      return res.status(400).json({ error: "Option text is required." });
+    }
+
+    // Check that poll exists
+    const poll = await Polls.findByPk(pollId);
+    if (!poll) {
+      return res.status(404).json({ error: "Poll not found." });
+    }
+
+    // Check that poll is in draft state
+    if (poll.status !== "draft") {
+      return res.status(400).json({ error: "Cannot add options to a published or ended poll." });
+    }
+
+    // Create the option
+    const newOption = await PollOption.create({
+      text,
+      pollId: poll.id,
+    });
+
+    res.status(201).json({
+      message: "Option added successfully.",
+      option: newOption,
+    });
+  } catch (err) {
+    console.error("Error adding poll option:", err);
+    res.status(500).json({ error: "Failed to add option." });
+  }
+});
+
 
 // Publishing logic and validation added
 router.put("/publish/:id", async (req, res) => {

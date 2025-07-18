@@ -2,10 +2,8 @@ const express = require("express");
 const router = express.Router();
 const { Poll, PollOption } = require("../database");
 const { authenticateJWT } = require("../auth");
-const pollOption = require("../database/models/pollOption");
-const { where } = require("sequelize");
 
-// Get all Polls
+// Get all users Polls----------------------------
 router.get("/", authenticateJWT, async (req, res) => {
     const userId = req.user.id;
 
@@ -18,7 +16,23 @@ router.get("/", authenticateJWT, async (req, res) => {
 });
 
 
-// Create polls
+//Get all users draft polls 
+router.get("/draft", authenticateJWT, async (req, res) => {
+    const userId = req.user.id;
+    try {
+        const draftPolls = await Poll.findAll({
+            where: {
+                userId,
+                status: "draft",
+            }
+        })
+        res.json(draftPolls)
+    } catch (error) {
+        res.status(500).json({ error: "Failed to get drafted polls" })
+    }
+})
+
+// Create polls---------------------------
 router.post("/", authenticateJWT, async (req, res) => {
     const userId = req.user.id
     const { title, description, deadline, status, options = [] } = req.body;
@@ -60,6 +74,8 @@ router.post("/", authenticateJWT, async (req, res) => {
 });
 
 
+
+//Edit polls--------------------
 router.patch("/:pollId", authenticateJWT, async (req, res) => {
     const userId = req.user.id
     const poll = req.body;

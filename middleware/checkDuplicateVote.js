@@ -2,7 +2,7 @@ const { Vote } = require("../database");
 const {Op} = require("sequelize"); //operator to specify multiple conditions
 
 const checkDuplicateVote = async (req, res, next) => {
-  const userId = req.user.id;
+  const userId = req.user ? req.user.id : null; 
   const pollId = req.body.pollId;
 
   try {

@@ -37,7 +37,10 @@ const checkDuplicateVote = async (req, res, next) => {
             .json({ error: "You have already voted on this poll." });
         }
     }
-  } catch (error) {}
+  } catch (error) {
+    console.error("Duplicate vote check failed:", error);
+    res.status(500).json({ error: "Server error checking vote." });
+  }
 };
 
 module.exports = checkDuplicateVote;

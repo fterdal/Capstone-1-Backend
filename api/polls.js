@@ -48,7 +48,7 @@ router.get("/draft", authenticateJWT, async (req, res) => {
 });
 
 // Get polls by slug
-router.get("/:slug", authenticateJWT, async (req, res) => {
+router.get("/slug/:slug", authenticateJWT, async (req, res) => {
     try {
         const pollSlug = req.params.slug;
         const poll = await Poll.findOne({

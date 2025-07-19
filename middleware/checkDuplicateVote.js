@@ -23,7 +23,7 @@ const checkDuplicateVote = async (req, res, next) => {
     }
     else {
         const guestUser = req.body.voterToken;
-        const ipAddress = req.ipAddress
+        const ipAddress = req.ip;
         //check if guest user already voted
         const existingGuestVote = await Vote.findOne({
           where: {

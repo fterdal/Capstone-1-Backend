@@ -1,4 +1,5 @@
 const { Vote } = require("../database");
+const {Op} = require("sequelize"); //operator to specify multiple conditions
 
 const checkDuplicateVote = async (req, res, next) => {
   const userId = req.user.id;
@@ -26,9 +27,11 @@ const checkDuplicateVote = async (req, res, next) => {
         //check if guest user already voted
         const existingGuestVote = await Vote.findOne({
           where: {
-            voterToken: guestUser,
-            ipAddress: ipAddress,
             pollId: pollId,
+            [Op.or]: [
+              { voterToken: guestUser },
+              { ipAddress: ipAddress }
+            ],
           },
         });
         if (existingGuestVote) {
@@ -37,6 +40,7 @@ const checkDuplicateVote = async (req, res, next) => {
             .json({ error: "You have already voted on this poll." });
         }
     }
+    return next(); // proceed to the next middleware or route handler
   } catch (error) {
     console.error("Duplicate vote check failed:", error);
     res.status(500).json({ error: "Server error checking vote." });

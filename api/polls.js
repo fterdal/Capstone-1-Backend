@@ -17,7 +17,8 @@ router.get("/", authenticateJWT, async (req, res) => {
 
 
 
-//Get all draft polls by user
+//Get all draft polls by user--------------------
+
 router.get("/draft", authenticateJWT, async (req, res) => {
     const userId = req.user.id;
     try {
@@ -67,6 +68,37 @@ router.get("/:slug", authenticateJWT, async (req, res) => {
 });
 
 
+
+//Get a users poll by id with options----------------- 
+router.get("/:pollId", authenticateJWT, async (req, res) => {
+    const userId = req.user.id;
+    const { pollId } = req.params;
+    console.log(pollId);
+    console.log(userId);
+
+    try {
+        // fetch a spcific poll with options that belong to this user
+        const poll = await Poll.findOne({
+            where: {
+                id: pollId,
+                userId: userId
+            },
+            include: { model: PollOption }
+        })
+
+        if (!poll) {
+            return res.status(404).json({ error: "No polls found" })
+        }
+        res.json(poll)
+
+    } catch (error) {
+        console.error("Error fetching poll:", error);
+        res.status(500).json({ error: "Failed to get poll by ID" });
+    }
+});
+
+
+
 // Create polls---------------------------
 router.post("/", authenticateJWT, async (req, res) => {
     const userId = req.user.id
@@ -77,7 +109,6 @@ router.post("/", authenticateJWT, async (req, res) => {
             error: " 2 options are requires to  publish a poll"
         })
     };
-
     try {
         const newPoll = await Poll.create({
             title,
@@ -179,7 +210,7 @@ router.patch("/:pollId", authenticateJWT, async (req, res) => {
 
 });
 
-//delete draft poll
+//delete draft poll-------------------------
 router.delete("/:id", authenticateJWT, async (req, res) => {
     try {
         const pollId = req.params.id;

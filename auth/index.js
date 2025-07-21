@@ -241,7 +241,7 @@ router.get("/me", async (req, res) => {
     }
     res.json(user);
   } catch (err) {
-    return res.status(403).json({});g
+    return res.status(403).json({});
   }
 });
 

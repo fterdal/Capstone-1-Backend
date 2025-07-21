@@ -40,16 +40,33 @@ router.get("/:id", async (req, res) => {
 
 router.delete("/:id", async (req, res) => {
   try {
-    const poll = await Poll.findByPk(req.params.id, {
-      include: [PollOption, Ballot, BallotRanking],
-    });
+    const poll = await Poll.findByPk(req.params.id);
+    
     if (!poll) {
-      return res.status(404).json({ error: "poll not found" });
+      return res.status(404).json({ error: "Poll not found" });
     }
+    await BallotRanking.destroy({
+      include: [{
+        model: Ballot,
+        where: { poll_id: req.params.id }
+      }]
+    });
+
+    await Ballot.destroy({
+      where: { poll_id: req.params.id }
+    });
+
+    await PollOption.destroy({
+      where: {poll_id: req.params.id}
+    });
     await poll.destroy();
-    res.status(200).json({ message: "Poll deleted successfully" });
+    
+    res.status(200).json({ 
+      message: "Poll and all related data deleted successfully" 
+    });
   } catch (error) {
-    res.status(500).json({ error: "Failed to delete a poll" });
+    console.error("Error deleting poll:", error);
+    res.status(500).json({ error: "Failed to delete poll" });
   }
 });
 

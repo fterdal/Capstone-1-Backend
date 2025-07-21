@@ -232,11 +232,8 @@ router.get("/me", async (req, res) => {
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
     const user = await User.findByPk(decoded.id, {
-<<<<<<< HEAD
+      // role is also included
       attributes: { exclude: ["passwordHash"], include: ["role"] },
-=======
-      attributes: { exclude: ["passwordHash"] },
->>>>>>> main
     });
 
     if (!user) {
@@ -244,7 +241,7 @@ router.get("/me", async (req, res) => {
     }
     res.json(user);
   } catch (err) {
-    return res.status(403).json({});
+    return res.status(403).json({});g
   }
 });
 

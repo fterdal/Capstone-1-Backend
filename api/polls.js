@@ -45,25 +45,83 @@ router.get("/:id", async (req, res) => {
 });
 
 router.delete("/:id", async (req, res) => {
+  const transaction = await Poll.sequelize.transaction(); 
+  
   try {
-    const poll = await Poll.findByPk(req.params.id, {
-      include: [PollOption, Ballot, BallotRanking],
-    });
+    const pollId = req.params.id;
+    const poll = await Poll.findByPk(pollId);
+    
     if (!poll) {
-      return res.status(404).json({ error: "poll not found" });
+      await transaction.rollback();
+      return res.status(404).json({ error: "Poll not found" });
     }
-    await poll.destroy();
-    res.status(200).json({ message: "Poll deleted successfully" });
+
+    const ballots = await Ballot.findAll({
+      where: { poll_id: pollId },
+      transaction
+    });
+
+    if (ballots.length > 0) {
+      const ballotIds = ballots.map(ballot => ballot.id);
+      await BallotRanking.destroy({
+        where: { ballot_id: ballotIds },
+        transaction
+      });
+    }
+
+    await Ballot.destroy({
+      where: { poll_id: pollId },
+      transaction
+    });
+
+    await PollOption.destroy({
+      where: { poll_id: pollId },
+      transaction
+    });
+
+    await Poll.destroy({
+      where: { id: pollId },
+      transaction
+    });
+
+    await transaction.commit();
+    
+    res.status(200).json({ 
+      message: "Poll and all related data deleted successfully" 
+    });
+    
   } catch (error) {
-    res.status(500).json({ error: "Failed to delete a poll" });
+    await transaction.rollback();
+    
+    res.status(500).json({ 
+      error: "Failed to delete poll",
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 });
 
 router.post("/", async (req, res) => {
   try {
-    const poll = await Poll.create(req.body);
-    res.status(201).send(poll);
+    const { pollOptions, ...pollData } = req.body;
+    const poll = await Poll.create(pollData);
+    
+    if (pollOptions && Array.isArray(pollOptions) && pollOptions.length > 0) {
+      const options = pollOptions.map((option, index) => ({
+        text: option.text,
+        position: option.position || index + 1,
+        poll_id: poll.id 
+      }));
+
+      await PollOption.bulkCreate(options);
+    }
+  
+    const pollWithOptions = await Poll.findByPk(poll.id, {
+      include: [PollOption]
+    });
+    
+    res.status(201).send(pollWithOptions);
   } catch (error) {
+    console.error("Error creating poll:", error);
     res.status(500).json({ error: "Failed to create a poll" });
   }
 });

@@ -24,8 +24,8 @@ const authenticateJWT = (req, res, next) => {
 };
 
 const requireAdmin = (req, res, next) => {
-  if (req.user.role !== 'admin') {
-    return res.status(403).send({ error: 'Admin privileges required' });
+  if (req.user.role !== "admin") {
+    return res.status(403).send({ error: "Admin privileges required" });
   }
   next();
 };
@@ -233,7 +233,7 @@ router.get("/me", async (req, res) => {
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
     const user = await User.findByPk(decoded.id, {
-      attributes: { exclude: ['passwordHash'] } 
+      attributes: { exclude: ["passwordHash"], include: ["role"] },
     });
 
     if (!user) {

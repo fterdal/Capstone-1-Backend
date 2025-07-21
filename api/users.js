@@ -60,4 +60,39 @@ router.post("/", async (req, res) => {
   }
 });
 
+router.patch("/:id", async(req,res) => {
+  try{
+    const{ password, ...userData } = req.body;
+
+    const existingUser= await User.findByPk(req.params.id);
+    if(!existingUser) {
+      return res.status(404).send("User not found");
+    }
+
+    const updateData = {...userData};
+
+    if(password){
+      updateData.passwordHash = User.hashPassword(password);
+    }
+
+    const [updatedRows] = await User.update(updateData, {
+      where: {id: req.params.id},
+    });
+
+    if (updatedRows === 0){
+      return res.status(400).send("No changes made to the user");
+    }
+
+    const updatedUser = await User.findByPk(req.params.id,{
+      include:[Poll, Ballot],
+      attributes: {exclude: ["passwordHash"]}
+    });
+
+    res.status(200).send(updatedUser);
+  }catch (error){
+    console.error("Error updating User: ", error);
+    res.status(500).send("Error User");
+  }
+})
+
 module.exports = router;

@@ -5,12 +5,12 @@ const usersRouter = require("./users");
 const pollsRouter = require("./polls");
 const pollOptionsRouter = require("./pollOptions");
 const ballotRouter = require("./ballots");
-const adminRouter = require("./admin")
+const adminRouter = require("./admins")
 
 router.use("/users", usersRouter);
 router.use("/polls", pollsRouter);
 router.use("/pollOptions", pollOptionsRouter);
 router.use("/ballots", ballotRouter);
-router.use("/admin", adminRouter)
+router.use("/admins", adminRouter)
 
 module.exports = router;

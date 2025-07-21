@@ -23,6 +23,13 @@ const authenticateJWT = (req, res, next) => {
   });
 };
 
+const requireAdmin = (req, res, next) => {
+  if (req.user.role !== "admin") {
+    return res.status(403).send({ error: "Admin privileges required" });
+  }
+  next();
+};
+
 // Auth0 authentication route
 router.post("/auth0", async (req, res) => {
   try {
@@ -74,6 +81,7 @@ router.post("/auth0", async (req, res) => {
         username: user.username,
         auth0Id: user.auth0Id,
         email: user.email,
+        role: user.role,
       },
       JWT_SECRET,
       { expiresIn: "24h" }
@@ -224,7 +232,8 @@ router.get("/me", async (req, res) => {
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
     const user = await User.findByPk(decoded.id, {
-      attributes: { exclude: ["passwordHash"] },
+      // role is also included
+      attributes: { exclude: ["passwordHash"], include: ["role"] },
     });
 
     if (!user) {
@@ -236,4 +245,4 @@ router.get("/me", async (req, res) => {
   }
 });
 
-module.exports = { router, authenticateJWT };
+module.exports = { router, authenticateJWT, requireAdmin };

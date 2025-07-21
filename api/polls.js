@@ -5,7 +5,13 @@ const { Poll, PollOption, Ballot, BallotRanking } = require("../database");
 router.get("/", async (req, res) => {
   try {
     const polls = await Poll.findAll({
-      include: [PollOption, Ballot],
+      include: [
+        PollOption,
+        {
+          model: Ballot,
+          include: [BallotRanking]
+        }
+      ],
     });
     console.log(`Found ${polls.length} polls`);
     res.status(200).send(polls);

@@ -74,6 +74,7 @@ router.post("/auth0", async (req, res) => {
         username: user.username,
         auth0Id: user.auth0Id,
         email: user.email,
+        role: user.role,
       },
       JWT_SECRET,
       { expiresIn: "24h" }

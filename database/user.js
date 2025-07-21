@@ -19,6 +19,11 @@ const User = db.define("user", {
       isUrl: true,
     },
   },
+  role: {
+    type: DataTypes.ENUM("user", "admin"),
+    allowNull: false,
+    defaultValue: "user",
+  },
   email: {
     type: DataTypes.STRING,
     allowNull: true,

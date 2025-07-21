@@ -5,8 +5,8 @@ const { User, Poll, Ballot } = require("../database");
 
 router.get(
   '/users',
-//   authenticateJWT,
-//   requireAdmin,
+  authenticateJWT,
+  requireAdmin,
   async (req, res) => {
     try {
       const users = await User.findAll({ include: [Poll, Ballot] });

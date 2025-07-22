@@ -101,15 +101,13 @@ router.patch("/:id", async (req, res) => {
     const userId = req.params.id;
     const { username, email, bio, imageUrl } = req.body;
     
-    console.log("Updating user:", userId, req.body); // Debug log
+    console.log("Updating user:", userId, req.body); 
     
-    // Find the user
     const user = await User.findByPk(userId);
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
     
-    // Check if username is already taken by another user
     if (username && username !== user.username) {
       const existingUser = await User.findOne({ 
         where: { username },
@@ -121,7 +119,6 @@ router.patch("/:id", async (req, res) => {
       }
     }
     
-    // Update user fields
     const updatedData = {};
     if (username !== undefined) updatedData.username = username.trim();
     if (email !== undefined) updatedData.email = email.trim();
@@ -130,16 +127,15 @@ router.patch("/:id", async (req, res) => {
     
     await user.update(updatedData);
     
-    // Return updated user with polls
     const updatedUser = await User.findByPk(userId, {
       include: [{
         model: Poll,
-        include: ['pollOptions'] // Include poll options if needed
+        include: ['pollOptions'] 
       }],
       attributes: { exclude: ['passwordHash'] }
     });
     
-    console.log("User updated successfully:", updatedUser.username); // Debug log
+    console.log("User updated successfully:", updatedUser.username);
     
     res.json(updatedUser);
   } catch (error) {

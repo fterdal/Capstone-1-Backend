@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { User, Poll, Ballot } = require("../database");
+const { User, Poll, Ballot, UserFollow } = require("../database");
 
 //get all users
 router.get("/", async (req, res) => {

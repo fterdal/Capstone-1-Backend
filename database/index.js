@@ -7,6 +7,7 @@ const BallotRanking = require("./ballotRanking");
 const PollAllowedUser = require("./pollAllowedUser");
 const PollResultValue = require("./pollResultValue");
 const PollResult = require("./pollResult");
+const UserFollow = require("./userFollow"); 
 
 User.hasMany(Poll, { foreignKey: "creator_id" });
 Poll.belongsTo(User, { as: "creator", foreignKey: "creator_id" });
@@ -35,6 +36,12 @@ PollResultValue.belongsTo(PollOption, { foreignKey: "option_id" });
 PollResult.hasMany(PollResultValue, { foreignKey: "poll_result_id" });
 PollResultValue.belongsTo(PollResult, { foreignKey: "poll_result_id" });
 
+User.hasMany(UserFollow, { as: "followingRelations", foreignKey: "follower_id" });
+User.hasMany(UserFollow, { as: "followerRelations", foreignKey: "following_id" });
+
+UserFollow.belongsTo(User, { as: "follower", foreignKey: "follower_id" });
+UserFollow.belongsTo(User, { as: "following", foreignKey: "following_id" });
+
 Poll.belongsToMany(User, {
   through: PollAllowedUser,
   as: "allowedUsers",
@@ -44,6 +51,20 @@ User.belongsToMany(Poll, {
   through: PollAllowedUser,
   as: "allowedPolls",
   foreignKey: "user_id",
+});
+
+User.belongsToMany(User, {
+  through: UserFollow,
+  as: "following",
+  foreignKey: "follower_id",
+  otherKey: "following_id",
+});
+
+User.belongsToMany(User, {
+  through: UserFollow,
+  as: "followers",
+  foreignKey: "following_id",
+  otherKey: "follower_id",
 });
 
 module.exports = {
@@ -56,4 +77,5 @@ module.exports = {
   PollAllowedUser,
   PollResult,
   PollResultValue,
+  UserFollow,
 };

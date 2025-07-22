@@ -46,7 +46,21 @@ const User = db.define("user", {
     allowNull: false,
     defaultValue: false,
   },
+  bio: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+},{
+  getterMethods: {
+    followersCount() {
+      return this.followers ? this.followers.length : 0;
+    },
+    followingCount() {
+      return this.following ? this.following.length : 0;
+    }
+  }
 });
+
 
 // Instance method to check password
 User.prototype.checkPassword = function (password) {

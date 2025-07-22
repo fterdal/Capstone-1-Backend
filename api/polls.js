@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const { authenticateJWT, requireAdmin } = require("../auth");
 const { Poll, PollOption, Ballot, BallotRanking } = require("../database");
 
 router.get("/", async (req, res) => {
@@ -9,8 +10,8 @@ router.get("/", async (req, res) => {
         PollOption,
         {
           model: Ballot,
-          include: [BallotRanking]
-        }
+          include: [BallotRanking],
+        },
       ],
     });
     console.log(`Found ${polls.length} polls`);
@@ -31,8 +32,8 @@ router.get("/:id", async (req, res) => {
         PollOption,
         {
           model: Ballot,
-          include: [BallotRanking]
-        }
+          include: [BallotRanking],
+        },
       ],
     });
     res.status(200).send(poll);
@@ -45,12 +46,12 @@ router.get("/:id", async (req, res) => {
 });
 
 router.delete("/:id", async (req, res) => {
-  const transaction = await Poll.sequelize.transaction(); 
-  
+  const transaction = await Poll.sequelize.transaction();
+
   try {
     const pollId = req.params.id;
     const poll = await Poll.findByPk(pollId);
-    
+
     if (!poll) {
       await transaction.rollback();
       return res.status(404).json({ error: "Poll not found" });
@@ -58,44 +59,44 @@ router.delete("/:id", async (req, res) => {
 
     const ballots = await Ballot.findAll({
       where: { poll_id: pollId },
-      transaction
+      transaction,
     });
 
     if (ballots.length > 0) {
-      const ballotIds = ballots.map(ballot => ballot.id);
+      const ballotIds = ballots.map((ballot) => ballot.id);
       await BallotRanking.destroy({
         where: { ballot_id: ballotIds },
-        transaction
+        transaction,
       });
     }
 
     await Ballot.destroy({
       where: { poll_id: pollId },
-      transaction
+      transaction,
     });
 
     await PollOption.destroy({
       where: { poll_id: pollId },
-      transaction
+      transaction,
     });
 
     await Poll.destroy({
       where: { id: pollId },
-      transaction
+      transaction,
     });
 
     await transaction.commit();
-    
-    res.status(200).json({ 
-      message: "Poll and all related data deleted successfully" 
+
+    res.status(200).json({
+      message: "Poll and all related data deleted successfully",
     });
-    
   } catch (error) {
     await transaction.rollback();
-    
-    res.status(500).json({ 
+
+    res.status(500).json({
       error: "Failed to delete poll",
-      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      details:
+        process.env.NODE_ENV === "development" ? error.message : undefined,
     });
   }
 });
@@ -104,21 +105,21 @@ router.post("/", async (req, res) => {
   try {
     const { pollOptions, ...pollData } = req.body;
     const poll = await Poll.create(pollData);
-    
+
     if (pollOptions && Array.isArray(pollOptions) && pollOptions.length > 0) {
       const options = pollOptions.map((option, index) => ({
         text: option.text,
         position: option.position || index + 1,
-        poll_id: poll.id 
+        poll_id: poll.id,
       }));
 
       await PollOption.bulkCreate(options);
     }
-  
+
     const pollWithOptions = await Poll.findByPk(poll.id, {
-      include: [PollOption]
+      include: [PollOption],
     });
-    
+
     res.status(201).send(pollWithOptions);
   } catch (error) {
     console.error("Error creating poll:", error);
@@ -128,37 +129,37 @@ router.post("/", async (req, res) => {
 
 router.patch("/:id", async (req, res) => {
   try {
-    const { pollOptions, ...pollData } = req.body; 
-    
+    const { pollOptions, ...pollData } = req.body;
+
     const existingPoll = await Poll.findByPk(req.params.id);
     if (!existingPoll) {
       return res.status(404).send("Poll not found");
     }
-    
+
     if (Object.keys(pollData).length > 0) {
       await Poll.update(pollData, {
         where: { id: req.params.id },
       });
     }
-    
+
     if (pollOptions && Array.isArray(pollOptions)) {
       await PollOption.destroy({
-        where: { poll_id: req.params.id }
+        where: { poll_id: req.params.id },
       });
-      
+
       const newOptions = pollOptions.map((option, index) => ({
         text: option.text,
         position: option.position || index + 1,
-        poll_id: req.params.id
+        poll_id: req.params.id,
       }));
-      
+
       await PollOption.bulkCreate(newOptions);
     }
-    
+
     const updatedPoll = await Poll.findByPk(req.params.id, {
-      include: [PollOption]
+      include: [PollOption],
     });
-    
+
     res.status(200).send(updatedPoll);
   } catch (error) {
     console.error("Error updating poll:", error);

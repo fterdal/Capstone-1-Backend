@@ -90,7 +90,9 @@ router.post("/auth0", async (req, res) => {
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
     });
 
@@ -101,6 +103,7 @@ router.post("/auth0", async (req, res) => {
         username: user.username,
         auth0Id: user.auth0Id,
         email: user.email,
+        role: user.role,
       },
     });
   } catch (error) {
@@ -143,6 +146,7 @@ router.post("/signup", async (req, res) => {
         username: user.username,
         auth0Id: user.auth0Id,
         email: user.email,
+        role: user.role,
       },
       JWT_SECRET,
       { expiresIn: "24h" }
@@ -151,7 +155,9 @@ router.post("/signup", async (req, res) => {
     res.cookie("token", token, {
       httpOnly: true,
       secure: true,
-      sameSite: "strict",
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
     });
 
@@ -177,9 +183,14 @@ router.post("/login", async (req, res) => {
 
     // Find user
     const user = await User.findOne({ where: { username } });
-    user.checkPassword(password);
     if (!user) {
       return res.status(401).send({ error: "Invalid credentials" });
+    }
+
+    if (user.disabled) {
+      return res
+        .status(403)
+        .send({ error: "Account disabled. Contact support." });
     }
 
     // Check password
@@ -194,6 +205,7 @@ router.post("/login", async (req, res) => {
         username: user.username,
         auth0Id: user.auth0Id,
         email: user.email,
+        role: user.role,
       },
       JWT_SECRET,
       { expiresIn: "24h" }
@@ -202,13 +214,15 @@ router.post("/login", async (req, res) => {
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
     });
 
     res.send({
       message: "Login successful",
-      user: { id: user.id, username: user.username },
+      user: { id: user.id, username: user.username, role: user.role },
     });
   } catch (error) {
     console.error("Login error:", error);

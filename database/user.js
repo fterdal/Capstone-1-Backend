@@ -41,6 +41,11 @@ const User = db.define("user", {
     type: DataTypes.STRING,
     allowNull: true,
   },
+  disabled: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
+  },
   bio: {
     type: DataTypes.STRING,
     allowNull: true,

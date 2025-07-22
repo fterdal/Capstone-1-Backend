@@ -44,4 +44,28 @@ router.patch(
   }
 );
 
+router.patch(
+  "/users/:id/disable",
+  authenticateJWT,
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const target = await User.findByPk(req.params.id);
+      if (!target) return res.status(404).json({ error: "User not found" });
+
+      if (target.role === "admin") {
+        return res.status(403).json({ error: "Cannot disable an admin account" });
+      }
+
+      target.disabled = !target.disabled;
+      await target.save();
+
+      res.json({ id: target.id, disabled: target.disabled });
+    } catch (err) {
+      console.error("Error disabling user:", err);
+      res.status(500).json({ error: "Failed to modify user" });
+    }
+  }
+);
+
 module.exports = router;

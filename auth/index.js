@@ -183,9 +183,14 @@ router.post("/login", async (req, res) => {
 
     // Find user
     const user = await User.findOne({ where: { username } });
-    user.checkPassword(password);
     if (!user) {
       return res.status(401).send({ error: "Invalid credentials" });
+    }
+
+    if (user.disabled) {
+      return res
+        .status(403)
+        .send({ error: "Account disabled. Contact support." });
     }
 
     // Check password

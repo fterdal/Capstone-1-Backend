@@ -11,6 +11,6 @@ router.use("/users", usersRouter);
 router.use("/polls", pollsRouter);
 router.use("/pollOptions", pollOptionsRouter);
 router.use("/ballots", ballotRouter);
-router.use("/admins", adminRouter)
+router.use("/admin", adminRouter)
 
 module.exports = router;

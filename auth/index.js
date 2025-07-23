@@ -24,6 +24,14 @@ const authenticateJWT = (req, res, next) => {
   });
 };
 
+// Admin check middleware
+function isAdmin(req, res, next) {
+  if (req.user && req.user.isAdmin) {
+    return next();
+  }
+  return res.status(403).json({ error: "Admin access required" });
+}
+
 // Auth0 authentication route
 router.post("/auth0", async (req, res) => {
   try {
@@ -169,13 +177,13 @@ router.post("/login", async (req, res) => {
     }
 
     // Find user by username or email
-    const user = await User.findOne({ 
-      where: { 
+    const user = await User.findOne({
+      where: {
         [Op.or]: [
           { username: username },
-          { email: username }
-        ]
-      } 
+          { email: username },
+        ],
+      },
     });
     if (!user) {
       return res.status(401).send({ error: "Invalid credentials" });
@@ -406,4 +414,8 @@ router.post("/signup/email", async (req, res) => {
   }
 });
 
-module.exports = { router, authenticateJWT };
+module.exports = {
+  router,
+  authenticateJWT,
+  isAdmin,
+};

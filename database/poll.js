@@ -36,10 +36,18 @@ const Poll = db.define(
       defaultValue: true,
     },
     publishedAt: DataTypes.DATE,
+    viewRestriction: {
+      type: DataTypes.ENUM("public", "followers", "friends", "custom"),
+      defaultValue: "public",
+    },
+    voteRestriction: {
+      type: DataTypes.ENUM("public", "followers", "friends", "custom"),
+      defaultValue: "public",
+  },
   },
   {
     underscored: true,
-  }
+  },
 );
 
 module.exports = Poll;

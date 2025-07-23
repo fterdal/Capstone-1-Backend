@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { Poll, PollOption, Vote, VotingRank } = require("../database");
 const { authenticateJWT } = require("../auth");
+const { where } = require("sequelize");
 
 // Get all users Polls----------------------------
 router.get("/", authenticateJWT, async (req, res) => {
@@ -240,7 +241,7 @@ router.post("/:pollId/vote", authenticateJWT, async (req, res) => {
   console.log("Vote route hit");
   const userId = req.user.id;
   console.log("User Id", userId)
-  
+
   const { pollId } = req.params;
   console.log("Poll Id", pollId)
   const { rankings } = req.body;
@@ -252,7 +253,7 @@ router.post("/:pollId/vote", authenticateJWT, async (req, res) => {
     // I know I am going to need the options that belong to this poll so I should query this poll and include the options
 
     const poll = await Poll.findOne({
-      where: { userId: userId, id: pollId },
+      where: { id: pollId },
       include: { model: PollOption },
     });
     // return res.send(poll) this is returns the poll that I want
@@ -274,26 +275,26 @@ router.post("/:pollId/vote", authenticateJWT, async (req, res) => {
         .json({ error: "A vote for this poll aready exist" });
     }
 
-    const newVote = await Vote.create({userId, pollId, submitted: true})
+    const newVote = await Vote.create({ userId, pollId, submitted: true })
     // return res.send(newVote)
     // I created the a new vote and linked it to the user and the poll now i need to create a new vote_ranking and link it to this vote
     const formattedVotingRank = rankings.map((rank) => {
-        return {pollOptionId: rank.optionId, voteId: newVote.id, rank: rank.rank}
+      return { pollOptionId: rank.optionId, voteId: newVote.id, rank: rank.rank }
     })
 
     console.log(formattedVotingRank)
-    const newVoteRanking= await VotingRank.bulkCreate(formattedVotingRank)
+    const newVoteRanking = await VotingRank.bulkCreate(formattedVotingRank)
     // return res.send(newVoteRanking)
 
-const completedVote = await Vote.findOne({
-    where: { userId: userId, pollId: pollId },
-    include: { model: VotingRank, include: {model: PollOption, attributes: ['id', 'optionText']} },
-  });
-// if (newVote.submitted === false) {
-//       vote.submitted = true;
-//       await newVotevote.save();
-//     }
-  return res.send(completedVote);
+    const completedVote = await Vote.findOne({
+      where: { userId: userId, pollId: pollId },
+      include: { model: VotingRank, include: { model: PollOption, attributes: ['id', 'optionText'] } },
+    });
+    // if (newVote.submitted === false) {
+    //       vote.submitted = true;
+    //       await newVotevote.save();
+    //     }
+    return res.send(completedVote);
 
     // Recap I have the target Poll then I featch the vote that belongs to the user and this poll .. after getting the vote
     // i was able to fetech all rankings that belongs to this vote
@@ -305,7 +306,7 @@ const completedVote = await Vote.findOne({
     //   });
     // }
 
-    
+
     // return res.send(vote);
 
     /// so from here i have succesfully submitted a vote now i need to go back to the top and create a new vote with new rankings since
@@ -316,8 +317,169 @@ const completedVote = await Vote.findOne({
   }
 
 
-  
+
 });
+
+
+//------------------------------------ Calculate results -------------------------------------------------------- 
+
+router.get("/:pollId/results", authenticateJWT, async (req, res) => {
+
+
+  const userId = req.user.id;
+  const { pollId } = req.params;
+
+  const votes = await Vote.findAll({
+    where: { pollId: pollId },
+    include: { model: VotingRank },
+  });
+
+  const allBallots = votes.map(vote => vote.votingRanks);
+
+  const ballots = allBallots.map(ballot => {
+    return ballot
+      .sort((a, b) => a.rank - b.rank)
+      .map((element) => element.pollOptionId)
+  })
+
+  const options = await PollOption.findAll({ where: { pollId: pollId } })
+
+  const optionsMap = {};
+
+  for (const option of options) {
+    optionsMap[option.id] =
+    {
+      name: option.optionText,
+      count: 0,
+      eliminated: false,
+    };
+  }
+
+
+  const totalVotes = ballots.length;
+  console.log(totalVotes)
+  const majorityThreshhold = Math.floor(totalVotes / 2) + 1;
+  console.log(majorityThreshhold)
+
+
+  let foundWinner = false;
+
+  while (!foundWinner) {
+
+    for (const option of Object.values(optionsMap)) {
+      option.count = 0;
+    }
+
+    for (const ballot of ballots) {
+      for (const optionId of ballot) {
+        const option = optionsMap[optionId];
+        if (!option.eliminated) {
+          option.count += 1;
+          break;
+        }
+      }
+    }
+
+
+    for (const [id, option] of Object.entries(optionsMap)) {
+      if (option.count > majorityThreshhold) {
+        foundWinner = true;
+        return res.json({
+          status: "winner",
+          optionId: id,
+          name: option.name,
+          voteCount: option.count,
+          totalVotes,
+        });
+      }
+    }
+
+
+    let minCount = Infinity;
+    let optionToEliminate = [];
+
+
+    for (const [optionId, option] of Object.entries(optionsMap)) {
+      if (!option.eliminated) {
+        if (option.count < minCount) {
+          minCount = option.count;
+          optionToEliminate = [optionId];
+        } else if (option.count === minCount) {
+          optionToEliminate.push(optionId)
+        }
+      }
+    }
+    console.log(optionToEliminate)
+    console.log(minCount);
+
+    const remaining = Object.values(optionsMap).filter((option) => !option.eliminated);
+
+    if (remaining.length === optionToEliminate.length) {
+      foundWinner = true
+      return res.json({
+        status: "tie",
+        tiedOptions: optionToEliminate.map((id) => ({
+          optionId: id,
+          name: optionsMap[id].name,
+          voteCount: optionsMap[id].count,
+        })),
+        totalVotes,
+      });
+    }
+
+
+    for (const optionId of optionToEliminate) {
+      optionsMap[optionId].eliminated = true
+    }
+  }
+
+
+
+
+
+
+  // return res.send(allBallots)
+  // return res.send(ballots)
+  //   [
+  //     [
+  //         7,
+  //         8,
+  //         9,
+  //         10
+  //     ],
+  //     [
+  //         10,
+  //         9,
+  //         8,
+  //         7
+  //     ]
+  // ]
+  // return res.send(options)
+  return res.send(optionsMap)
+
+  //  {
+  //     "7": {
+  //         "name": "Die Hard",
+  //         "count": 0,
+  //         "elimated": 0
+  //     },
+  //     "8": {
+  //         "name": "Die Hard 2",
+  //         "count": 0,
+  //         "elimated": 0
+  //     },
+  //     "9": {
+  //         "name": "Twilight",
+  //         "count": 0,
+  //         "elimated": 0
+  //     },
+  //     "10": {
+  //         "name": "Spiderverse",
+  //         "count": 0,
+  //         "elimated": 0
+  //     }
+  // }
+})
 
 // duplicate poll endpoint
 router.post('/:id/duplicate', authenticateJWT, async (req, res) => {
@@ -416,5 +578,6 @@ router.post('/:pollId/duplicate', authenticateJWT, async (req, res) => {
     res.status(500).json({ error: 'Failed to duplicate poll' });
   }
 });
+
 
 module.exports = router;

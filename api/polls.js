@@ -286,6 +286,12 @@ router.post("/:pollId/vote", authenticateJWT, async (req, res) => {
       return { pollOptionId: rank.optionId, voteId: newVote.id, rank: rank.rank }
     })
 
+    //increment participants
+    const allVotes = await Vote.findAll({ where: { pollId: pollId } })
+    poll.participants = allVotes.length
+    await poll.save()
+
+
     console.log(formattedVotingRank)
     const newVoteRanking = await VotingRank.bulkCreate(formattedVotingRank)
     // return res.send(newVoteRanking)

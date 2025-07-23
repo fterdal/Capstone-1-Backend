@@ -330,6 +330,30 @@ router.post("/:pollId/vote", authenticateJWT, async (req, res) => {
 
 });
 
+// get the current user's submission for a poll
+router.get("/:pollId/vote", authenticateJWT, async (req, res) => {
+  const userId = req.user.id;
+  const { pollId } = req.params;
+  try {
+    const vote = await Vote.findOne({
+      where: { userId, pollId },
+      include: {
+        model: VotingRank,
+        include: {
+          model: PollOption,
+          attributes: ["id", "optionText"],
+        },
+      },
+    });
+    if (!vote) {
+      return res.status(404).json({ error: "No submission found for this poll" });
+    }
+    res.json(vote);
+  } catch (error) {
+    console.error("Error fetching user submission:", error);
+    res.status(500).json({ error: "Failed to fetch user submission" });
+  }
+});
 
 //------------------------------------ Calculate results -------------------------------------------------------- 
 

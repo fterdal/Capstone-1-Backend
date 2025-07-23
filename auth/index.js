@@ -189,6 +189,11 @@ router.post("/login", async (req, res) => {
       return res.status(401).send({ error: "Invalid credentials" });
     }
 
+    // check if the user is disabled
+    if (user.isDisable) {
+      return res.status(403).send({ error: "Account disabled. Please contact support." });
+    }
+
     // Check password
     if (!user.checkPassword(password)) {
       return res.status(401).send({ error: "Invalid credentials" });

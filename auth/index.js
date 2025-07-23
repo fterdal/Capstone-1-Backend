@@ -32,6 +32,14 @@ function isAdmin(req, res, next) {
   return res.status(403).json({ error: "Admin access required" });
 }
 
+// block disabled users from certain actions
+function blockIfDisabled(req, res, next) {
+  if (req.user && req.user.isDisable) {
+    return res.status(403).json({ error: "Account disabled. Action not allowed." });
+  }
+  next();
+}
+
 // Auth0 authentication route
 router.post("/auth0", async (req, res) => {
   try {
@@ -423,4 +431,5 @@ module.exports = {
   router,
   authenticateJWT,
   isAdmin,
+  blockIfDisabled,
 };

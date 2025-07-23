@@ -56,6 +56,11 @@ User.init(
       type: DataTypes.TEXT,
       allowNull: true,
     },
+    disabled: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
+    },
     role: {
       type: DataTypes.ENUM("user", "admin"),
       defaultValue: "user",

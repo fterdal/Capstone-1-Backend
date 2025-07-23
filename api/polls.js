@@ -319,4 +319,102 @@ const completedVote = await Vote.findOne({
   
 });
 
+// duplicate poll endpoint
+router.post('/:id/duplicate', authenticateJWT, async (req, res) => {
+  try {
+    const pollId = req.params.id;
+    const userId = req.user.id;
+
+    // fetch poll and options
+    const poll = await Poll.findByPk(pollId, {
+      include: { model: PollOption }
+    });
+    if (!poll) {
+      return res.status(404).json({ error: 'Poll not found' });
+    }
+    if (poll.userId !== userId) {
+      return res.status(403).json({ error: 'Unauthorized: not your poll' });
+    }
+
+    // create new poll with same fields
+    const newPoll = await Poll.create({
+      title: poll.title + ' (copy)',
+      description: poll.description,
+      status: 'draft',
+      userId: userId,
+      deadline: poll.deadline,
+      authRequired: poll.authRequired,
+      restricted: poll.restricted
+    });
+
+    // generate unique slug
+    await newPoll.update({ slug: `${poll.slug}-copy-${newPoll.id}` });
+
+    // copy options
+    const newOptions = poll.pollOptions.map((opt) => ({
+      optionText: opt.optionText,
+      pollId: newPoll.id,
+      position: opt.position
+    }));
+    await PollOption.bulkCreate(newOptions);
+
+    // fetch new poll with options
+    const pollWithOptions = await Poll.findByPk(newPoll.id, {
+      include: { model: PollOption }
+    });
+
+    res.status(201).json({
+      message: 'Poll duplicated successfully',
+      poll: pollWithOptions
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to duplicate poll' });
+  }
+});
+
+// duplicate poll by id---------------------------
+router.post('/:pollId/duplicate', authenticateJWT, async (req, res) => {
+  const userId = req.user.id;
+  const { pollId } = req.params;
+  try {
+    // fetch poll and options
+    const poll = await Poll.findOne({
+      where: { id: pollId, userId },
+      include: { model: PollOption }
+    });
+    if (!poll) {
+      return res.status(404).json({ error: 'Poll not found' });
+    }
+    // create new poll
+    const newPoll = await Poll.create({
+      title: poll.title + ' (copy)',
+      description: poll.description,
+      status: 'draft',
+      userId,
+      deadline: poll.deadline,
+      authRequired: poll.authRequired,
+      restricted: poll.restricted
+    });
+    await newPoll.update({ slug: `${poll.slug}-copy-${newPoll.id}` });
+    // copy options
+    const newOptions = poll.pollOptions.map((opt) => ({
+      optionText: opt.optionText,
+      pollId: newPoll.id,
+      position: opt.position
+    }));
+    await PollOption.bulkCreate(newOptions);
+    // fetch new poll with options
+    const pollWithOptions = await Poll.findOne({
+      where: { id: newPoll.id, userId },
+      include: { model: PollOption }
+    });
+    res.status(201).json({
+      message: 'Poll duplicated successfully',
+      poll: pollWithOptions
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to duplicate poll' });
+  }
+});
+
 module.exports = router;

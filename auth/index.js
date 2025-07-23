@@ -108,7 +108,9 @@ router.post("/auth0", async (req, res) => {
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
     });
 
@@ -119,6 +121,7 @@ router.post("/auth0", async (req, res) => {
         username: user.username,
         auth0Id: user.auth0Id,
         email: user.email,
+        role: user.role,
       },
       token: token
     });
@@ -162,6 +165,7 @@ router.post("/signup", async (req, res) => {
         username: user.username,
         auth0Id: user.auth0Id,
         email: user.email,
+        role: user.role,
       },
       JWT_SECRET,
       { expiresIn: "24h" }
@@ -204,7 +208,7 @@ router.post("/login", async (req, res) => {
     if (!user) {
       return res.status(401).json({ error: "Invalid credentials" });
     }
-
+  
     // Verify password
     const isValidPassword = User.comparePassword(password, user.passwordHash);
     if (!isValidPassword) {

@@ -198,6 +198,12 @@ router.post("/login", async (req, res) => {
       return res.status(401).send({ error: "Invalid credentials" });
     }
 
+    if (user.disabled) {
+      return res
+        .status(403)
+        .send({ error: "Account disabled. Contact support." });
+    }
+
     // Generate JWT token
     const token = jwt.sign(
       {

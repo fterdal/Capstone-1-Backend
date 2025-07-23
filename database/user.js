@@ -1,78 +1,84 @@
-const { DataTypes } = require("sequelize");
+const { DataTypes, Model } = require("sequelize");
 const db = require("./db");
 const bcrypt = require("bcrypt");
 
-const User = db.define("user", {
-  username: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    unique: true,
-    validate: {
-      len: [3, 20],
+class User extends Model {
+  static hashPassword(password) {
+    return bcrypt.hashSync(password, 10);
+  }
+
+  static comparePassword(password, hash) {
+    return bcrypt.compareSync(password, hash);
+  }
+
+  checkPassword(password) {
+    return bcrypt.compareSync(password, this.passwordHash);
+  }
+}
+
+User.init(
+  {
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true,
     },
-  },
-  imageUrl: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    defaultValue: "https://cdn-icons-png.flaticon.com/512/2528/2528787.png",
-    validate: {
-      isUrl: true,
+    auth0Id: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: true,
     },
-  },
-  role: {
-    type: DataTypes.ENUM("user", "admin"),
-    allowNull: false,
-    defaultValue: "user",
-  },
-  email: {
-    type: DataTypes.STRING,
-    allowNull: true,
-    unique: true,
-    validate: {
-      isEmail: true,
+    username: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true,
+      validate: {
+        len: [3, 30],
+      },
     },
-  },
-  auth0Id: {
-    type: DataTypes.STRING,
-    allowNull: true,
-    unique: true,
-  },
-  passwordHash: {
-    type: DataTypes.STRING,
-    allowNull: true,
-  },
-  disabled: {
+    email: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      validate: {
+        isEmail: true,
+      },
+    },
+    passwordHash: {
+      type: DataTypes.STRING,
+      allowNull: true, 
+    },
+    imageUrl: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      defaultValue: "https://t3.ftcdn.net/jpg/05/16/27/58/360_F_516275801_f3Fsp17x6HQK0xQgDQEELoTuERO4SsWV.jpg",
+    },
+    bio: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    disabled: {
     type: DataTypes.BOOLEAN,
     allowNull: false,
     defaultValue: false,
-  },
-  bio: {
-    type: DataTypes.STRING,
-    allowNull: true,
-  },
-},{
-  getterMethods: {
-    followersCount() {
-      return this.followers ? this.followers.length : 0;
     },
-    followingCount() {
-      return this.following ? this.following.length : 0;
-    }
+    role: {
+      type: DataTypes.ENUM("user", "admin"),
+      defaultValue: "user",
+    },
+    viewRestriction: {
+      type: DataTypes.ENUM("public", "followers", "friends", "custom"),
+      defaultValue: "public",
+    },
+    voteRestriction: {
+      type: DataTypes.ENUM("public", "followers", "friends", "custom"),
+      defaultValue: "public",
+    },
+  },
+  {
+    sequelize: db,
+    modelName: "User",
+    tableName: "users",
   }
-});
-
-
-// Instance method to check password
-User.prototype.checkPassword = function (password) {
-  if (!this.passwordHash) {
-    return false; // Auth0 users don't have passwords
-  }
-  return bcrypt.compareSync(password, this.passwordHash);
-};
-
-// Class method to hash password
-User.hashPassword = function (password) {
-  return bcrypt.hashSync(password, 10);
-};
+);
 
 module.exports = User;

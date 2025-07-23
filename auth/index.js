@@ -6,25 +6,43 @@ const router = express.Router();
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 
-// Middleware to authenticate JWT tokens
-const authenticateJWT = (req, res, next) => {
-  const token = req.cookies.token;
-
-  if (!token) {
-    return res.status(401).send({ error: "Access token required" });
+const authenticateJWT = async (req, res, next) => {
+  let token = null;
+  
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    token = authHeader.substring(7); 
   }
-
-  jwt.verify(token, JWT_SECRET, (err, user) => {
-    if (err) {
-      return res.status(403).send({ error: "Invalid or expired token" });
+  
+  if (!token && req.cookies && req.cookies.token) {
+    token = req.cookies.token;
+  }
+  
+  if (token) {
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET);
+      const user = await User.findByPk(decoded.id);
+      if (user) {
+        req.user = user;
+      }
+    } catch (error) {
+      console.error("JWT verification failed:", error);
     }
-    req.user = user;
-    next();
-  });
+  }
+  
+  next();
+};
+
+// Middleware that requires authentication
+const requireAuth = (req, res, next) => {
+  if (!req.user) {
+    return res.status(401).json({ error: "Authentication required" });
+  }
+  next();
 };
 
 const requireAdmin = (req, res, next) => {
-  if (req.user.role !== "admin") {
+  if (!req.user || req.user.role !== "admin") {
     return res.status(403).send({ error: "Admin privileges required" });
   }
   next();
@@ -58,8 +76,8 @@ router.post("/auth0", async (req, res) => {
       const userData = {
         auth0Id,
         email: email || null,
-        username: username || email?.split("@")[0] || `user_${Date.now()}`, // Use email prefix as username if no username provided
-        passwordHash: null, // Auth0 users don't have passwords
+        username: username || email?.split("@")[0] || `user_${Date.now()}`,
+        passwordHash: null, 
       };
 
       // Ensure username is unique
@@ -105,6 +123,7 @@ router.post("/auth0", async (req, res) => {
         email: user.email,
         role: user.role,
       },
+      token: token
     });
   } catch (error) {
     console.error("Auth0 authentication error:", error);
@@ -154,16 +173,20 @@ router.post("/signup", async (req, res) => {
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure: true,
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
     });
 
     res.send({
       message: "User created successfully",
-      user: { id: user.id, username: user.username },
+      user: { 
+        id: user.id, 
+        username: user.username,
+        email: user.email,
+        imageUrl: user.imageUrl
+      },
+      token: token
     });
   } catch (error) {
     console.error("Signup error:", error);
@@ -175,64 +198,59 @@ router.post("/signup", async (req, res) => {
 router.post("/login", async (req, res) => {
   try {
     const { username, password } = req.body;
-
+    
     if (!username || !password) {
-      res.status(400).send({ error: "Username and password are required" });
-      return;
+      return res.status(400).json({ error: "Username and password are required" });
     }
 
-    // Find user
+    // Find user by username
     const user = await User.findOne({ where: { username } });
     if (!user) {
-      return res.status(401).send({ error: "Invalid credentials" });
+      return res.status(401).json({ error: "Invalid credentials" });
     }
-
-    if (user.disabled) {
-      return res
-        .status(403)
-        .send({ error: "Account disabled. Contact support." });
+  
+    // Verify password
+    const isValidPassword = User.comparePassword(password, user.passwordHash);
+    if (!isValidPassword) {
+      return res.status(401).json({ error: "Invalid credentials" });
     }
-
-    // Check password
-    if (!user.checkPassword(password)) {
-      return res.status(401).send({ error: "Invalid credentials" });
-    }
-
-    if (user.disabled) {
-      return res
-        .status(403)
-        .send({ error: "Account disabled. Contact support." });
-    }
-
-    // Generate JWT token
+    
+    // Create JWT token
     const token = jwt.sign(
-      {
-        id: user.id,
+      { 
+        id: user.id, 
         username: user.username,
-        auth0Id: user.auth0Id,
         email: user.email,
-        role: user.role,
+        role: user.role
       },
       JWT_SECRET,
-      { expiresIn: "24h" }
+      { expiresIn: '24h' }
     );
-
-    res.cookie("token", token, {
+    
+    // Set cookie (for backward compatibility)
+    res.cookie('token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 24 * 60 * 60 * 1000 // 24 hours
     });
-
-    res.send({
+    
+    // Also return token in response body
+    res.json({
       message: "Login successful",
-      user: { id: user.id, username: user.username, role: user.role },
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        imageUrl: user.imageUrl,
+        role: user.role
+      },
+      token: token
     });
+    
   } catch (error) {
     console.error("Login error:", error);
-    res.sendStatus(500);
+    res.status(500).json({ error: "Login failed" });
   }
 });
 
@@ -244,25 +262,38 @@ router.post("/logout", (req, res) => {
 
 // Get current user route (protected)
 router.get("/me", async (req, res) => {
-  const token = req.cookies.token;
+  let token = null;
+  
+  // Try to get token from Authorization header first
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    token = authHeader.substring(7);
+  }
+  
+  // If no token in header, try to get from cookies
+  if (!token && req.cookies && req.cookies.token) {
+    token = req.cookies.token;
+  }
 
   if (!token) {
-    return res.status(401).json({});
+    return res.status(401).json({ error: "No token provided" });
   }
+
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
     const user = await User.findByPk(decoded.id, {
-      // role is also included
-      attributes: { exclude: ["passwordHash"], include: ["role"] },
+      attributes: { exclude: ["passwordHash"] },
     });
 
     if (!user) {
-      return res.status(404).json({});
+      return res.status(404).json({ error: "User not found" });
     }
+    
     res.json(user);
   } catch (err) {
-    return res.status(403).json({});
+    console.error("Token verification failed:", err);
+    return res.status(403).json({ error: "Invalid token" });
   }
 });
 
-module.exports = { router, authenticateJWT, requireAdmin };
+module.exports = { router, authenticateJWT, requireAuth, requireAdmin };

@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { Poll, PollOption, Vote, VotingRank } = require("../database");
 const { authenticateJWT } = require("../auth");
-const { where } = require("sequelize");
+const { where, Model } = require("sequelize");
 
 // Get all users Polls----------------------------
 router.get("/", authenticateJWT, async (req, res) => {
@@ -84,7 +84,11 @@ router.get("/:pollId", authenticateJWT, async (req, res) => {
         id: pollId,
         userId: userId,
       },
-      include: { model: PollOption },
+      include: [
+        { model: PollOption },
+        { model: Vote },
+      ],
+
     });
 
     if (!poll) {
@@ -288,12 +292,12 @@ router.post("/:pollId/vote", authenticateJWT, async (req, res) => {
 
     const completedVote = await Vote.findOne({
       where: { userId: userId, pollId: pollId },
-      include: { model: VotingRank, include: { model: PollOption, attributes: ['id', 'optionText'] } },
+      include: { model: VotingRank, include: { model: PollOption, attributes: ['id', 'optionText', 'position'] } },
     });
-    // if (newVote.submitted === false) {
-    //       vote.submitted = true;
-    //       await newVotevote.save();
-    //     }
+    // console.log(completedVote.votingRanks)
+    for (const votingRank of completedVote.votingRanks) {
+      votingRank.pollOption.position = votingRank.rank - 1;
+    }
     return res.send(completedVote);
 
     // Recap I have the target Poll then I featch the vote that belongs to the user and this poll .. after getting the vote

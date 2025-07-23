@@ -39,7 +39,9 @@ PollOption.belongsTo(Poll, {
 });
 
 
-
+Poll.hasMany(Vote, {
+  foreignKey: "pollId"
+});
 //----- Vote Model--------
 
 // one to many- each user can submit many votes

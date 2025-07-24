@@ -33,4 +33,32 @@ router.patch('/:userId/disable', authenticateJWT, isAdmin, async (req, res) => {
   }
 });
 
+// GET /api/users/:userId - fetch user profile info
+router.get('/:userId', authenticateJWT, async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const user = await User.findByPk(userId, {
+      attributes: [
+        'id',
+        'firstName',
+        'lastName',
+        'email',
+        'username',
+        'img',
+        'isAdmin',
+        'isDisable',
+        'createdAt',
+        'updatedAt'
+      ]
+    });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    res.json(user);
+  } catch (error) {
+    console.error('Error fetching user profile:', error);
+    res.status(500).json({ error: 'Failed to fetch user profile' });
+  }
+});
+
 module.exports = router;

@@ -244,16 +244,18 @@ router.post("/:pollId/vote", authenticateJWT, blockIfDisabled, async (req, res) 
   //   { optionId: 1, rank: 1 },
   //   { optionId: 2, rank: 2 },
   // ];
-  console.log("Vote route hit");
+  // console.log("Vote route hit");
   const userId = req.user.id;
-  console.log("User Id", userId)
+  // console.log("User Id", userId)
 
   const { pollId } = req.params;
   console.log("Poll Id", pollId)
-  const { rankings } = req.body;
+  const { rankings, submitted } = req.body;
   if (!userId) {
     return res.status(404).json({ error: "Unathorized action" });
   }
+
+
 
   try {
     // I know I am going to need the options that belong to this poll so I should query this poll and include the options
@@ -281,7 +283,7 @@ router.post("/:pollId/vote", authenticateJWT, blockIfDisabled, async (req, res) 
         .json({ error: "A vote for this poll aready exist" });
     }
 
-    const newVote = await Vote.create({ userId, pollId, submitted: true })
+    const newVote = await Vote.create({ userId: userId, pollId: pollId, submitted: submitted })
     // return res.send(newVote)
     // I created the a new vote and linked it to the user and the poll now i need to create a new vote_ranking and link it to this vote
     const formattedVotingRank = rankings.map((rank) => {
@@ -289,9 +291,11 @@ router.post("/:pollId/vote", authenticateJWT, blockIfDisabled, async (req, res) 
     })
 
     //increment participants
-    const allVotes = await Vote.findAll({ where: { pollId: pollId } })
-    poll.participants = allVotes.length
-    await poll.save()
+    if (newVote.submitted === true) {
+      const allVotes = await Vote.findAll({ where: { pollId: pollId } })
+      poll.participants = allVotes.length
+      await poll.save();
+    }
 
 
     console.log(formattedVotingRank)
@@ -327,10 +331,71 @@ router.post("/:pollId/vote", authenticateJWT, blockIfDisabled, async (req, res) 
     console.log("Fatal error");
     return res.status(500).json({ error: "Failed to submit a vote" });
   }
-
-
-
 });
+
+//--------------------------------------------------------------------------------
+router.patch("/poll/:pollId/vote/:voteId", authenticateJWT, async (req, res) => {
+  const userId = req.user.id;
+  const { voteId, pollId } = req.params;
+  const { submitted, rankings } = req.body;
+
+
+
+  try {
+    const vote = await Vote.findOne({
+      where: { id: voteId, pollId, userId },
+      include: VotingRank,
+    });
+
+    if (!vote) {
+      return res.status(404).json({ error: "Vote not found" });
+    }
+    if (vote.submitted) {
+      return res.status(403).json({ error: "Cannot update a submitted vote" });
+    }
+
+    // Update the vote (e.g., mark as submitted)
+    await vote.update({ submitted });
+
+    // Replace rankings
+    if (Array.isArray(rankings)) {
+      // 🧹 Delete old rankings
+      await VotingRank.destroy({ where: { voteId } });
+
+      //Create new rankings
+      const newRanks = rankings.map(rank => ({
+        voteId,
+        pollOptionId: rank.optionId,
+        rank: rank.rank,
+      }));
+      await VotingRank.bulkCreate(newRanks);
+    }
+
+    // Re-fetch updated vote and send back
+    const updatedVote = await Vote.findOne({
+      where: { id: voteId },
+      include: {
+        model: VotingRank,
+        include: {
+          model: PollOption,
+          attributes: ['id', 'optionText', 'position'],
+        },
+      },
+    });
+
+    // positions for frontend display
+    for (const votingRank of updatedVote.votingRanks) {
+      votingRank.pollOption.position = votingRank.rank - 1;
+    }
+
+    return res.json(updatedVote);
+
+  } catch (error) {
+    console.error("Failed to update vote:", error);
+    return res.status(500).json({ error: "Failed to update vote" });
+  }
+});
+
 
 // get the current user's submission for a poll
 router.get("/:pollId/vote", authenticateJWT, async (req, res) => {
@@ -758,7 +823,7 @@ router.get("/:pollId/results", authenticateJWT, blockIfDisabled, async (req, res
 })
 
 // admin route to fetch all polls
-router.get("/all", authenticateJWT, isAdmin, async (req, res) => {
+router.get("/all/all", authenticateJWT, isAdmin, async (req, res) => {
   try {
     const polls = await Poll.findAll({
       include: [{ model: PollOption }],

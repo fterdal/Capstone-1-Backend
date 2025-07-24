@@ -9,17 +9,45 @@ const seed = async () => {
 
     const users = await User.bulkCreate([
       {
-        username: "admin",
-        passwordHash: User.hashPassword("admin123"),
+        username: "Tran",
+        passwordHash: User.hashPassword("tran123"),
+        email: "tran@example.com",
+        firstName: "Tran",
+        lastName: "Vo",
+        img: "https://cdn2.thecatapi.com/images/MTY3ODIyMQ.jpg",
+        isAdmin: true,
+        isDisable: false
       },
       {
-        username: "user1",
-        passwordHash: User.hashPassword("user111")
+        username: "Flo",
+        passwordHash: User.hashPassword("flo123"),
+        email: "flo@example.com",
+        firstName: "Florencio",
+        lastName: "Rendon",
+        img: "https://cdn2.thecatapi.com/images/MTY3ODIyMg.jpg",
+        isAdmin: false,
+        isDisable: false
       },
       {
-        username: "user2",
-        passwordHash: User.hashPassword("user222")
+        username: "Olivia",
+        passwordHash: User.hashPassword("olivia123"),
+        email: "olivia@example.com",
+        firstName: "Olivia",
+        lastName: "Wilson-Simmonds",
+        img: "https://cdn2.thecatapi.com/images/MTY3ODIyMw.jpg",
+        isAdmin: false,
+        isDisable: false
       },
+      {
+        username: "Hai",
+        passwordHash: User.hashPassword("hai123"),
+        email: "hai@example.com",
+        firstName: "Hailia",
+        lastName: "Sommerville",
+        img: "https://cdn2.thecatapi.com/images/MTY3ODIyNA.jpg",
+        isAdmin: false,
+        isDisable: false
+      }
     ]);
 
     // deadline: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
@@ -31,7 +59,7 @@ const seed = async () => {
         description: "Rank your favorite animes!",
         participants: 0,
         status: "draft",
-        userKey: "user1",
+        userKey: "Tran",
 
       },
       {
@@ -40,14 +68,14 @@ const seed = async () => {
         description: "Rank your favorite movies!",
         participants: 0,
         status: "published",
-        userKey: "user2",
+        userKey: "Flo",
       },
       {
         key: "bbq",
         title: "Best BBQ Item?",
         description: "Rank your favorite BBQ food!",
         status: "published",
-        userKey: "user1"
+        userKey: "Tran"
       },
       {
         key: "authRequired",
@@ -56,8 +84,7 @@ const seed = async () => {
         participants: 0,
         status: "published",
         authRequired: true,
-        userKey: "user2"
-
+        userKey: "Flo"
       },
       {
         key: "restricited",
@@ -66,8 +93,7 @@ const seed = async () => {
         participants: 0,
         status: "published",
         restricted: true,
-        userKey: "user1"
-
+        userKey: "Tran"
       },
     ];
 
@@ -75,9 +101,10 @@ const seed = async () => {
     const deadline = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000); // 3days
 
     const userMap = {
-      admin: users[0],
-      user1: users[1],
-      user2: users[2],
+      Tran: users[0],
+      Flo: users[1],
+      Olivia: users[2],
+      Hai: users[3],
     };
 
     for (const poll of pollData) {
@@ -87,7 +114,6 @@ const seed = async () => {
         userId: userMap[poll.userKey].id,
       })
       createdPolls[poll.key] = created;
-      // console.log(createdPolls.anime.id)
     };
 
 
@@ -259,6 +285,9 @@ const seed = async () => {
 
 
     console.log(`👤 Created ${users.length} users`);
+    users.forEach(u => {
+      console.log(`- ${u.username}: id=${u.id}, email=${u.email}, firstName=${u.firstName}, lastName=${u.lastName}, displayName=${u.displayName || "(none)"}, img=${u.img}, isAdmin=${u.isAdmin}, isDisable=${u.isDisable}`);
+    });
     console.log(`Created ${Object.keys(createdPolls).length} polls`);
     console.log(`🧾 Created ${PollOptions.length} poll options`);
     // Create more seed data here once you've created your models

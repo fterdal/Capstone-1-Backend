@@ -12,7 +12,6 @@ const seed = async () => {
         username: "Tran",
         passwordHash: User.hashPassword("tran123"),
         email: "tran@example.com",
-        displayName: "Tran Vo",
         firstName: "Tran",
         lastName: "Vo",
         img: "https://cdn2.thecatapi.com/images/MTY3ODIyMQ.jpg",
@@ -23,7 +22,6 @@ const seed = async () => {
         username: "Flo",
         passwordHash: User.hashPassword("flo123"),
         email: "flo@example.com",
-        displayName: "Florencio Rendon",
         firstName: "Florencio",
         lastName: "Rendon",
         img: "https://cdn2.thecatapi.com/images/MTY3ODIyMg.jpg",
@@ -34,7 +32,6 @@ const seed = async () => {
         username: "Olivia",
         passwordHash: User.hashPassword("olivia123"),
         email: "olivia@example.com",
-        displayName: "Olivia Wilson-Simmonds",
         firstName: "Olivia",
         lastName: "Wilson-Simmonds",
         img: "https://cdn2.thecatapi.com/images/MTY3ODIyMw.jpg",
@@ -45,7 +42,6 @@ const seed = async () => {
         username: "Hai",
         passwordHash: User.hashPassword("hai123"),
         email: "hai@example.com",
-        displayName: "Hailia Sommerville",
         firstName: "Hailia",
         lastName: "Sommerville",
         img: "https://cdn2.thecatapi.com/images/MTY3ODIyNA.jpg",
@@ -63,7 +59,7 @@ const seed = async () => {
         description: "Rank your favorite animes!",
         participants: 0,
         status: "draft",
-        userKey: "user1",
+        userKey: "Tran",
 
       },
       {
@@ -72,14 +68,14 @@ const seed = async () => {
         description: "Rank your favorite movies!",
         participants: 0,
         status: "published",
-        userKey: "user2",
+        userKey: "Flo",
       },
       {
         key: "bbq",
         title: "Best BBQ Item?",
         description: "Rank your favorite BBQ food!",
         status: "published",
-        userKey: "user1"
+        userKey: "Tran"
       },
       {
         key: "authRequired",
@@ -88,8 +84,7 @@ const seed = async () => {
         participants: 0,
         status: "published",
         authRequired: true,
-        userKey: "user2"
-
+        userKey: "Flo"
       },
       {
         key: "restricited",
@@ -98,8 +93,7 @@ const seed = async () => {
         participants: 0,
         status: "published",
         restricted: true,
-        userKey: "user1"
-
+        userKey: "Tran"
       },
     ];
 
@@ -292,7 +286,7 @@ const seed = async () => {
 
     console.log(`👤 Created ${users.length} users`);
     users.forEach(u => {
-      console.log(`- ${u.username}: id=${u.id}, email=${u.email}, displayName=${u.displayName}, isAdmin=${u.isAdmin}, isDisable=${u.isDisable}`);
+      console.log(`- ${u.username}: id=${u.id}, email=${u.email}, firstName=${u.firstName}, lastName=${u.lastName}, displayName=${u.displayName || "(none)"}, img=${u.img}, isAdmin=${u.isAdmin}, isDisable=${u.isDisable}`);
     });
     console.log(`Created ${Object.keys(createdPolls).length} polls`);
     console.log(`🧾 Created ${PollOptions.length} poll options`);

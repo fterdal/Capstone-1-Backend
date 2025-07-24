@@ -60,5 +60,35 @@ router.get('/:userId', authenticateJWT, async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch user profile' });
   }
 });
+// PATCH /api/users/:userId - update user profile info
+router.patch('/:userId', authenticateJWT, async (req, res) => {
+  const { userId } = req.params;
+  const { firstName, lastName, email, username, img } = req.body;
+  // only allow user to edit their own account
+  if (parseInt(userId) !== req.user.id) {
+    return res.status(403).json({ error: 'you can only edit your own account' });
+  }
+  try {
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    if (firstName) user.firstName = firstName;
+    if (lastName) user.lastName = lastName;
+    if (email) user.email = email;
+    if (username) user.username = username;
+    if (img) user.img = img
+    await user.save();
+    res.json({ message: 'User profile updated successfully', user });
+  } catch (error) {
+    // handle unique constraint errors for email and username
+    if (error.name === 'SequelizeUniqueConstraintError') {
+      return res.status(400).json({ error: 'Email or username already in use' });
+    }
+    console.error('Error updating user profile:', error);
+    res.status(500).json({ error: 'Failed to update user profile' });
+  }
+});
+    
 
 module.exports = router;

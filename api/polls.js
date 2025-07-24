@@ -758,7 +758,7 @@ router.get("/:pollId/results", authenticateJWT, blockIfDisabled, async (req, res
 })
 
 // admin route to fetch all polls
-router.get("/all", authenticateJWT, isAdmin, async (req, res) => {
+router.get("/admin/all", authenticateJWT, isAdmin, async (req, res) => {
   try {
     const polls = await Poll.findAll({
       include: [{ model: PollOption }],

@@ -73,7 +73,6 @@ const User = db.define("user", {
 },
   {
     timestamps: true,
-    createdAt: 'created_at',
   }
 );
 

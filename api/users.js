@@ -7,7 +7,7 @@ const { authenticateJWT, isAdmin } = require("../auth");
 router.get("/", authenticateJWT, isAdmin, async (req, res) => {
   try {
     const users = await User.findAll({
-      attributes: ["id", "username", "email", "createdAt", "updatedAt", "status"]
+      
     });
     res.json(users);
   } catch (error) {

@@ -91,6 +91,7 @@ router.post("/auth0", async (req, res) => {
         username: user.username,
         auth0Id: user.auth0Id,
         email: user.email,
+        isAdmin: user.isAdmin,
       },
       JWT_SECRET,
       { expiresIn: "24h" }
@@ -152,6 +153,7 @@ router.post("/signup", async (req, res) => {
         username: user.username,
         auth0Id: user.auth0Id,
         email: user.email,
+        isAdmin: user.isAdmin,
       },
       JWT_SECRET,
       { expiresIn: "24h" }
@@ -214,6 +216,7 @@ router.post("/login", async (req, res) => {
         username: user.username,
         auth0Id: user.auth0Id,
         email: user.email,
+        isAdmin: user.isAdmin,
       },
       JWT_SECRET,
       { expiresIn: "24h" }
@@ -329,6 +332,7 @@ router.post("/signup/username", async (req, res) => {
         id: user.id,
         username: user.username,
         email: user.email,
+        isAdmin: user.isAdmin,
       },
       JWT_SECRET,
       { expiresIn: "24h" }
@@ -411,6 +415,7 @@ router.post("/signup/email", async (req, res) => {
         id: user.id,
         username: user.username,
         email: user.email,
+        isAdmin: user.isAdmin,
       },
       JWT_SECRET,
       { expiresIn: "24h" }

@@ -243,19 +243,30 @@ router.post("/logout", (req, res) => {
 });
 
 // Get current user route (protected)
-router.get("/me", (req, res) => {
-  const token = req.cookies.token;
-
-  if (!token) {
-    return res.send({});
-  }
-
-  jwt.verify(token, JWT_SECRET, (err, user) => {
-    if (err) {
-      return res.status(403).send({ error: "Invalid or expired token" });
+router.get("/me", authenticateJWT, async (req, res) => {
+  try {
+    const user = await User.findByPk(req.user.id, {
+      attributes: [
+        "id",
+        "firstName",
+        "lastName",
+        "email",
+        "username",
+        "img",
+        "isAdmin",
+        "isDisable",
+        "createdAt",
+        "updatedAt"
+      ]
+    });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
     }
-    res.send({ user: user });
-  });
+    res.json(user);
+  } catch (error) {
+    console.error("error fetching user info:", error);
+    res.status(500).json({ error: "fail to fetch user info" });
+  }
 });
 
 // Helper function to check if input looks like email

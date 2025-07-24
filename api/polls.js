@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { Poll, PollOption, Vote, VotingRank } = require("../database");
-const { authenticateJWT } = require("../auth");
+const { authenticateJWT, blockIfDisabled, isAdmin } = require("../auth");
 const { where, Model } = require("sequelize");
 
 // Get all users Polls----------------------------
@@ -102,7 +102,7 @@ router.get("/:pollId", authenticateJWT, async (req, res) => {
 });
 
 // Create polls---------------------------
-router.post("/", authenticateJWT, async (req, res) => {
+router.post("/", authenticateJWT, blockIfDisabled, async (req, res) => {
   const userId = req.user.id;
   const { title, description, deadline, status, options = [] } = req.body;
 
@@ -164,6 +164,8 @@ router.patch("/:pollId", authenticateJWT, async (req, res) => {
       return res
         .status(403)
         .json({ error: "poll does not belong to this user" });
+    } else if (updatePoll.isDisabled) {
+      return res.status(403).json({ error: "Poll is disabled and cannot be edited" });
     }
 
     if (updatePoll.status === "draft") {
@@ -237,7 +239,7 @@ router.delete("/:id", authenticateJWT, async (req, res) => {
 });
 
 //-------------------------------------------------------------- Create A vote ballot --------------------------------------------
-router.post("/:pollId/vote", authenticateJWT, async (req, res) => {
+router.post("/:pollId/vote", authenticateJWT, blockIfDisabled, async (req, res) => {
   // rankings = [
   //   { optionId: 1, rank: 1 },
   //   { optionId: 2, rank: 2 },
@@ -357,7 +359,7 @@ router.get("/:pollId/vote", authenticateJWT, async (req, res) => {
 
 //------------------------------------ Calculate results -------------------------------------------------------- 
 
-router.get("/:pollId/results", authenticateJWT, async (req, res) => {
+router.get("/:pollId/results", authenticateJWT, blockIfDisabled, async (req, res) => {
 
 
   const userId = req.user.id;
@@ -515,6 +517,20 @@ router.get("/:pollId/results", authenticateJWT, async (req, res) => {
   // }
 })
 
+// admin route to fetch all polls
+router.get("/all", authenticateJWT, isAdmin, async (req, res) => {
+  try {
+    const polls = await Poll.findAll({
+      include: [{ model: PollOption }],
+      attributes: { exclude: ["userId"] }, // exclude sensitive user info
+    });
+    res.json(polls);
+  } catch (error) {
+    console.error("Error fetching all polls:", error);
+    res.status(500).json({ error: "Failed to fetch all polls" });
+  }
+});
+
 // duplicate poll endpoint
 router.post('/:id/duplicate', authenticateJWT, async (req, res) => {
   try {
@@ -613,5 +629,21 @@ router.post('/:pollId/duplicate', authenticateJWT, async (req, res) => {
   }
 });
 
+// PATCH /api/polls/:pollId/disable - admin only
+router.patch('/:pollId/disable', authenticateJWT, isAdmin, async (req, res) => {
+  const { pollId } = req.params;
+  try {
+    const poll = await Poll.findByPk(pollId);
+    if (!poll) {
+      return res.status(404).json({ error: 'Poll not found' });
+    }
+    poll.isDisabled = true;
+    await poll.save();
+    res.json({ message: 'Poll disabled', pollId: poll.id });
+  } catch (error) {
+    console.error('Error disabling poll:', error);
+    res.status(500).json({ error: 'Failed to disable poll' });
+  }
+});
 
 module.exports = router;

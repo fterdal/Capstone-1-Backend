@@ -24,6 +24,22 @@ const authenticateJWT = (req, res, next) => {
   });
 };
 
+// Admin check middleware
+function isAdmin(req, res, next) {
+  if (req.user && req.user.isAdmin) {
+    return next();
+  }
+  return res.status(403).json({ error: "Admin access required" });
+}
+
+// block disabled users from certain actions
+function blockIfDisabled(req, res, next) {
+  if (req.user && req.user.isDisable) {
+    return res.status(403).json({ error: "Account disabled. Action not allowed." });
+  }
+  next();
+}
+
 // Auth0 authentication route
 router.post("/auth0", async (req, res) => {
   try {
@@ -169,16 +185,21 @@ router.post("/login", async (req, res) => {
     }
 
     // Find user by username or email
-    const user = await User.findOne({ 
-      where: { 
+    const user = await User.findOne({
+      where: {
         [Op.or]: [
           { username: username },
-          { email: username }
-        ]
-      } 
+          { email: username },
+        ],
+      },
     });
     if (!user) {
       return res.status(401).send({ error: "Invalid credentials" });
+    }
+
+    // check if the user is disabled
+    if (user.isDisable) {
+      return res.status(403).send({ error: "Account disabled. Please contact support." });
     }
 
     // Check password
@@ -406,4 +427,9 @@ router.post("/signup/email", async (req, res) => {
   }
 });
 
-module.exports = { router, authenticateJWT };
+module.exports = {
+  router,
+  authenticateJWT,
+  isAdmin,
+  blockIfDisabled,
+};

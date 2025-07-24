@@ -64,6 +64,10 @@ router.get('/:userId', authenticateJWT, async (req, res) => {
 router.patch('/:userId', authenticateJWT, async (req, res) => {
   const { userId } = req.params;
   const { firstName, lastName, email, username, img } = req.body;
+  // only allow user to edit their own account
+  if (parseInt(userId) !== req.user.id) {
+    return res.status(403).json({ error: 'you can only edit your own account' });
+  }
   try {
     const user = await User.findByPk(userId);
     if (!user) {

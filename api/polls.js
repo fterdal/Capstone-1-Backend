@@ -369,8 +369,122 @@ router.get("/:pollId/results", authenticateJWT, blockIfDisabled, async (req, res
     where: { pollId: pollId },
     include: { model: VotingRank },
   });
+  //   [
+  //     {
+  //         "id": 1,
+  //         "submitted": true,
+  //         "voterToken": null,
+  //         "ipAddress": null,
+  //         "userId": 2,
+  //         "pollId": 1,
+  //         "createdAt": "2025-07-24T07:04:10.459Z",
+  //         "updatedAt": "2025-07-24T07:04:10.459Z",
+  //         "votingRanks": [
+  //             {
+  //                 "id": 1,
+  //                 "voteId": 1,
+  //                 "pollOptionId": 1,
+  //                 "rank": 1,
+  //                 "createdAt": "2025-07-24T07:04:10.475Z",
+  //                 "updatedAt": "2025-07-24T07:04:10.475Z"
+  //             },
+  //             {
+  //                 "id": 2,
+  //                 "voteId": 1,
+  //                 "pollOptionId": 2,
+  //                 "rank": 2,
+  //                 "createdAt": "2025-07-24T07:04:10.475Z",
+  //                 "updatedAt": "2025-07-24T07:04:10.475Z"
+  //             },
+  //             {
+  //                 "id": 3,
+  //                 "voteId": 1,
+  //                 "pollOptionId": 3,
+  //                 "rank": 3,
+  //                 "createdAt": "2025-07-24T07:04:10.475Z",
+  //                 "updatedAt": "2025-07-24T07:04:10.475Z"
+  //             },
+  //             {
+  //                 "id": 4,
+  //                 "voteId": 1,
+  //                 "pollOptionId": 4,
+  //                 "rank": 4,
+  //                 "createdAt": "2025-07-24T07:04:10.475Z",
+  //                 "updatedAt": "2025-07-24T07:04:10.475Z"
+  //             },
+  //             {
+  //                 "id": 5,
+  //                 "voteId": 1,
+  //                 "pollOptionId": 5,
+  //                 "rank": 5,
+  //                 "createdAt": "2025-07-24T07:04:10.475Z",
+  //                 "updatedAt": "2025-07-24T07:04:10.475Z"
+  //             },
+  //             {
+  //                 "id": 6,
+  //                 "voteId": 1,
+  //                 "pollOptionId": 5,
+  //                 "rank": 5,
+  //                 "createdAt": "2025-07-24T07:04:10.475Z",
+  //                 "updatedAt": "2025-07-24T07:04:10.475Z"
+  //             }
+  //         ]
+  //     }
+  // ]
 
   const allBallots = votes.map(vote => vote.votingRanks);
+  //   [
+  //     [
+  //         {
+  //             "id": 1,
+  //             "voteId": 1,
+  //             "pollOptionId": 1,
+  //             "rank": 1,
+  //             "createdAt": "2025-07-24T07:04:10.475Z",
+  //             "updatedAt": "2025-07-24T07:04:10.475Z"
+  //         },
+  //         {
+  //             "id": 2,
+  //             "voteId": 1,
+  //             "pollOptionId": 2,
+  //             "rank": 2,
+  //             "createdAt": "2025-07-24T07:04:10.475Z",
+  //             "updatedAt": "2025-07-24T07:04:10.475Z"
+  //         },
+  //         {
+  //             "id": 3,
+  //             "voteId": 1,
+  //             "pollOptionId": 3,
+  //             "rank": 3,
+  //             "createdAt": "2025-07-24T07:04:10.475Z",
+  //             "updatedAt": "2025-07-24T07:04:10.475Z"
+  //         },
+  //         {
+  //             "id": 4,
+  //             "voteId": 1,
+  //             "pollOptionId": 4,
+  //             "rank": 4,
+  //             "createdAt": "2025-07-24T07:04:10.475Z",
+  //             "updatedAt": "2025-07-24T07:04:10.475Z"
+  //         },
+  //         {
+  //             "id": 5,
+  //             "voteId": 1,
+  //             "pollOptionId": 5,
+  //             "rank": 5,
+  //             "createdAt": "2025-07-24T07:04:10.475Z",
+  //             "updatedAt": "2025-07-24T07:04:10.475Z"
+  //         },
+  //         {
+  //             "id": 6,
+  //             "voteId": 1,
+  //             "pollOptionId": 5,
+  //             "rank": 5,
+  //             "createdAt": "2025-07-24T07:04:10.475Z",
+  //             "updatedAt": "2025-07-24T07:04:10.475Z"
+  //         }
+  //     ]
+  // ]
 
   const ballots = allBallots.map(ballot => {
     return ballot
@@ -378,7 +492,71 @@ router.get("/:pollId/results", authenticateJWT, blockIfDisabled, async (req, res
       .map((element) => element.pollOptionId)
   })
 
+  //   [
+  //     [
+  //         7,
+  //         8,
+  //         9,
+  //         10
+  //     ],
+  //     [
+  //         10,
+  //         9,
+  //         8,
+  //         7
+  //     ]
+  // ]
   const options = await PollOption.findAll({ where: { pollId: pollId } })
+  //   [
+  //     {
+  //         "id": 1,
+  //         "optionText": "Demon Slayer",
+  //         "position": 1,
+  //         "pollId": 1,
+  //         "createdAt": "2025-07-24T07:01:09.263Z",
+  //         "updatedAt": "2025-07-24T07:01:09.263Z"
+  //     },
+  //     {
+  //         "id": 2,
+  //         "optionText": "One Piece",
+  //         "position": 2,
+  //         "pollId": 1,
+  //         "createdAt": "2025-07-24T07:01:09.263Z",
+  //         "updatedAt": "2025-07-24T07:01:09.263Z"
+  //     },
+  //     {
+  //         "id": 3,
+  //         "optionText": "AOT",
+  //         "position": 3,
+  //         "pollId": 1,
+  //         "createdAt": "2025-07-24T07:01:09.263Z",
+  //         "updatedAt": "2025-07-24T07:01:09.263Z"
+  //     },
+  //     {
+  //         "id": 4,
+  //         "optionText": "Naruto",
+  //         "position": 4,
+  //         "pollId": 1,
+  //         "createdAt": "2025-07-24T07:01:09.263Z",
+  //         "updatedAt": "2025-07-24T07:01:09.263Z"
+  //     },
+  //     {
+  //         "id": 5,
+  //         "optionText": "Devil May Cry",
+  //         "position": 5,
+  //         "pollId": 1,
+  //         "createdAt": "2025-07-24T07:01:09.263Z",
+  //         "updatedAt": "2025-07-24T07:01:09.263Z"
+  //     },
+  //     {
+  //         "id": 6,
+  //         "optionText": "Castlevania",
+  //         "position": 6,
+  //         "pollId": 1,
+  //         "createdAt": "2025-07-24T07:01:09.263Z",
+  //         "updatedAt": "2025-07-24T07:01:09.263Z"
+  //     }
+  // ]
 
   const optionsMap = {};
 
@@ -390,22 +568,60 @@ router.get("/:pollId/results", authenticateJWT, blockIfDisabled, async (req, res
       eliminated: false,
     };
   }
-
+  //  {
+  //     "7": {
+  //         "name": "Die Hard",
+  //         "count": 0,
+  //         "elimated": 
+  //     },
+  //     "8": {
+  //         "name": "Die Hard 2",
+  //         "count": 0,
+  //         "elimated": 
+  //     },
+  //     "9": {
+  //         "name": "Twilight",
+  //         "count": 0,
+  //         "elimated": 
+  //     },
+  //     "10": {
+  //         "name": "Spiderverse",
+  //         "count": 0,
+  //         "elimated": 
+  //     }
+  // }
 
   const totalVotes = ballots.length;
-  console.log(totalVotes)
+  // console.log(totalVotes)
   const majorityThreshhold = Math.floor(totalVotes / 2) + 1;
-  console.log(majorityThreshhold)
+  // console.log(majorityThreshhold)
 
 
   let foundWinner = false;
+
+  // Front end needs the options that were eliminated for each round to include their count ------>
+  let roundNumber = 1;
+  let roundResults = [];
 
   while (!foundWinner) {
 
     for (const option of Object.values(optionsMap)) {
       option.count = 0;
     }
-
+    //   [
+    //     [
+    //         1,
+    //         2,
+    //         3,
+    //         4
+    //     ],
+    //     [
+    //         10,
+    //         9,
+    //         8,
+    //         7
+    //     ]
+    // ]
     for (const ballot of ballots) {
       for (const optionId of ballot) {
         const option = optionsMap[optionId];
@@ -415,7 +631,31 @@ router.get("/:pollId/results", authenticateJWT, blockIfDisabled, async (req, res
         }
       }
     }
+    //     {
+    //   '1': { name: 'Demon Slayer', count: 1, eliminated: false },
+    //   '2': { name: 'One Piece', count: 0, eliminated: true },
+    //   '3': { name: 'AOT', count: 0, eliminated: true },
+    //   '4': { name: 'Naruto', count: 0, eliminated: true },
+    //   '5': { name: 'Devil May Cry', count: 0, eliminated: true },
+    //   '6': { name: 'Castlevania', count: 0, eliminated: true }
+    // }
 
+
+
+    // Front end needs the options that were eliminated for each round to include their count ------>
+    const currentRound = {
+      round: roundNumber,
+      results: {},
+    };
+    for (const [id, option] of Object.entries(optionsMap)) {
+      currentRound.results[id] = {
+        name: option.name,
+        count: option.count,
+        eliminated: option.eliminated
+      };
+    }
+    roundResults.push(currentRound);
+    roundNumber++;
 
     for (const [id, option] of Object.entries(optionsMap)) {
       if (option.count > majorityThreshhold) {
@@ -426,6 +666,7 @@ router.get("/:pollId/results", authenticateJWT, blockIfDisabled, async (req, res
           name: option.name,
           voteCount: option.count,
           totalVotes,
+          rounds: roundResults
         });
       }
     }
@@ -445,8 +686,7 @@ router.get("/:pollId/results", authenticateJWT, blockIfDisabled, async (req, res
         }
       }
     }
-    console.log(optionToEliminate)
-    console.log(minCount);
+
 
     const remaining = Object.values(optionsMap).filter((option) => !option.eliminated);
 
@@ -460,6 +700,7 @@ router.get("/:pollId/results", authenticateJWT, blockIfDisabled, async (req, res
           voteCount: optionsMap[id].count,
         })),
         totalVotes,
+        rounds: roundResults
       });
     }
 
@@ -471,9 +712,8 @@ router.get("/:pollId/results", authenticateJWT, blockIfDisabled, async (req, res
 
 
 
-
-
-
+  // return res.send(options)
+  // return res.send(votes)
   // return res.send(allBallots)
   // return res.send(ballots)
   //   [

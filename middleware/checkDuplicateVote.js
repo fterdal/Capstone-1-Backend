@@ -1,8 +1,8 @@
 const { Vote } = require("../database");
-const {Op} = require("sequelize"); //operator to specify multiple conditions
+const { Op } = require("sequelize"); //operator to specify multiple conditions
 
 const checkDuplicateVote = async (req, res, next) => {
-  const userId = req.user ? req.user.id : null; 
+  const userId = req.user ? req.user.id : null;
   const pollId = req.body.pollId;
 
   try {
@@ -22,23 +22,23 @@ const checkDuplicateVote = async (req, res, next) => {
       }
     }
     else {
-        const guestUser = req.body.voterToken;
-        const ipAddress = req.ip;
-        //check if guest user already voted
-        const existingGuestVote = await Vote.findOne({
-          where: {
-            pollId: pollId,
-            [Op.or]: [
-              { voterToken: guestUser },
-              { ipAddress: ipAddress }
-            ],
-          },
-        });
-        if (existingGuestVote) {
-          return res
-            .status(409)
-            .json({ error: "You have already voted on this poll." });
-        }
+      const guestUser = req.body.voterToken;
+      const ipAddress = req.ip;
+      //check if guest user already voted
+      const existingGuestVote = await Vote.findOne({
+        where: {
+          pollId: pollId,
+          [Op.or]: [
+            { voterToken: guestUser },
+            { ipAddress: ipAddress }
+          ],
+        },
+      });
+      if (existingGuestVote) {
+        return res
+          .status(409)
+          .json({ error: "You have already voted on this poll." });
+      }
     }
     return next(); // proceed to the next middleware or route handler
   } catch (error) {
@@ -46,5 +46,8 @@ const checkDuplicateVote = async (req, res, next) => {
     res.status(500).json({ error: "Server error checking vote." });
   }
 };
+
+
+
 
 module.exports = checkDuplicateVote;

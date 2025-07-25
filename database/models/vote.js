@@ -18,7 +18,11 @@ const Vote = db.define("vote", {
     },
     userId: {
         type: DataTypes.INTEGER,
-        allowNull: false,
+        // allowNull: false,
+    },
+    guestEmail: {
+        type: DataTypes.STRING,
+        unique: true,
     },
     pollId: {
         type: DataTypes.INTEGER,

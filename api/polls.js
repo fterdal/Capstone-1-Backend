@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { Poll, PollOption, Vote, VotingRank } = require("../database");
-const { authenticateJWT, blockIfDisabled, isAdmin } = require("../auth");
+const { authenticateJWT, blockIfDisabled, isAdmin, optionalAuth } = require("../auth");
 const { where, Model } = require("sequelize");
 
 // Get all users Polls----------------------------
@@ -49,7 +49,7 @@ router.get("/draft", authenticateJWT, async (req, res) => {
 });
 
 // Get polls by slug
-router.get("/slug/:slug", authenticateJWT, async (req, res) => {
+router.get("/slug/:slug", async (req, res) => {
   try {
     const pollSlug = req.params.slug;
     const poll = await Poll.findOne({
@@ -64,6 +64,12 @@ router.get("/slug/:slug", authenticateJWT, async (req, res) => {
     if (!poll) {
       return res.status(404).json({ error: "Poll not found" });
     }
+
+    if (poll.authRequired && !req.user) {
+      return res.status(401).json({ error: "Login required to view this poll" });
+    }
+
+
     res.json(poll);
   } catch (error) {
     res.status(500).json({ error: "Failed to get poll" });
@@ -239,56 +245,66 @@ router.delete("/:id", authenticateJWT, async (req, res) => {
 });
 
 //-------------------------------------------------------------- Create A vote ballot --------------------------------------------
-router.post("/:pollId/vote", authenticateJWT, blockIfDisabled, async (req, res) => {
+router.post("/:pollId/vote", optionalAuth, blockIfDisabled, async (req, res) => {
   // rankings = [
   //   { optionId: 1, rank: 1 },
   //   { optionId: 2, rank: 2 },
   // ];
   // console.log("Vote route hit");
-  const userId = req.user.id;
-  // console.log("User Id", userId)
+  const userId = req.user?.id || null; // null = guest  
+
 
   const { pollId } = req.params;
-  console.log("Poll Id", pollId)
+  // console.log("Poll Id", pollId)
   const { rankings, submitted } = req.body;
-  if (!userId) {
-    return res.status(404).json({ error: "Unathorized action" });
-  }
-
 
 
   try {
-    // I know I am going to need the options that belong to this poll so I should query this poll and include the options
 
+    // I know I am going to need the options that belong to this poll so I should query this poll and include the options
     const poll = await Poll.findOne({
       where: { id: pollId },
       include: { model: PollOption },
     });
-    // return res.send(poll) this is returns the poll that I want
 
+
+    // check if this poll exist
     if (!poll) {
       return res.status(404).json({ error: "Poll not found" });
     }
 
-    // I want to create a new vote only if a vote does not already exist
 
-    // Now that we have the poll we are workgin with I want to look at the vote that belongs to this poll
-    const vote = await Vote.findOne({
-      where: { userId: userId, pollId: pollId },
-      include: { model: VotingRank },
-    });
-    if (vote) {
-      return res
-        .status(401)
-        .json({ error: "A vote for this poll aready exist" });
+    // I want to create a new vote only if a vote does not already exist
+    // Check if user already voted (only for logged-in users)
+    if (userId) {
+      const existingVote = await Vote.findOne({
+        where: { userId, pollId }
+      });
+      if (existingVote) {
+        return res.status(401).json({ error: "You already voted" });
+      }
     }
 
-    const newVote = await Vote.create({ userId: userId, pollId: pollId, submitted: submitted })
-    // return res.send(newVote)
+
+    // Create a new vote
+    const newVote = await Vote.create({
+      userId, // can be null
+      pollId,
+      submitted: submitted || false,
+    });
+
+
+
     // I created the a new vote and linked it to the user and the poll now i need to create a new vote_ranking and link it to this vote
-    const formattedVotingRank = rankings.map((rank) => {
-      return { pollOptionId: rank.optionId, voteId: newVote.id, rank: rank.rank }
-    })
+    const formattedRanks = rankings.map(r => ({
+      pollOptionId: r.optionId,
+      voteId: newVote.id,
+      rank: r.rank,
+    }));
+    // create the rankings
+    await VotingRank.bulkCreate(formattedRanks);
+
+
 
     //increment participants
     if (newVote.submitted === true) {
@@ -298,13 +314,18 @@ router.post("/:pollId/vote", authenticateJWT, blockIfDisabled, async (req, res) 
     }
 
 
-    console.log(formattedVotingRank)
-    const newVoteRanking = await VotingRank.bulkCreate(formattedVotingRank)
+    // const newVoteRanking = await VotingRank.bulkCreate(formattedVotingRank)
     // return res.send(newVoteRanking)
 
     const completedVote = await Vote.findOne({
-      where: { userId: userId, pollId: pollId },
-      include: { model: VotingRank, include: { model: PollOption, attributes: ['id', 'optionText', 'position'] } },
+      where: { id: newVote.id },
+      include: {
+        model: VotingRank,
+        include: {
+          model: PollOption,
+          attributes: ['id', 'optionText', 'position'],
+        },
+      },
     });
     // console.log(completedVote.votingRanks)
     for (const votingRank of completedVote.votingRanks) {
@@ -328,12 +349,14 @@ router.post("/:pollId/vote", authenticateJWT, blockIfDisabled, async (req, res) 
     /// so from here i have succesfully submitted a vote now i need to go back to the top and create a new vote with new rankings since
     // what I accomplish was to submit a vote predefined in the seed.js
   } catch (error) {
-    console.log("Fatal error");
-    return res.status(500).json({ error: "Failed to submit a vote" });
+    console.error("Guest vote error:", error);
+    res.status(500).json({ error: "Failed to submit vote" });
   }
 });
 
-//--------------------------------------------------------------------------------
+
+
+//---------------------------------------Update drafted Vote-----------------------------------------
 router.patch("/poll/:pollId/vote/:voteId", authenticateJWT, async (req, res) => {
   const userId = req.user.id;
   const { voteId, pollId } = req.params;
@@ -397,7 +420,7 @@ router.patch("/poll/:pollId/vote/:voteId", authenticateJWT, async (req, res) => 
 });
 
 
-// get the current user's submission for a poll
+// get the current user's submission for a poll-----------------------------
 router.get("/:pollId/vote", authenticateJWT, async (req, res) => {
   const userId = req.user.id;
   const { pollId } = req.params;
@@ -822,7 +845,7 @@ router.get("/:pollId/results", authenticateJWT, blockIfDisabled, async (req, res
   // }
 })
 
-// admin route to fetch all polls
+// admin route to fetch all polls---------------------------------------------------------------
 
 router.get("/admin/all", authenticateJWT, isAdmin, async (req, res) => {
 
@@ -838,7 +861,7 @@ router.get("/admin/all", authenticateJWT, isAdmin, async (req, res) => {
   }
 });
 
-// duplicate poll endpoint
+// duplicate poll endpoint---------------------------------------------------------------
 router.post('/:id/duplicate', authenticateJWT, async (req, res) => {
   try {
     const pollId = req.params.id;
@@ -891,7 +914,7 @@ router.post('/:id/duplicate', authenticateJWT, async (req, res) => {
   }
 });
 
-// duplicate poll by id---------------------------
+// duplicate poll by id------------------------------------------------------------------------------------------
 router.post('/:pollId/duplicate', authenticateJWT, async (req, res) => {
   const userId = req.user.id;
   const { pollId } = req.params;
@@ -936,7 +959,7 @@ router.post('/:pollId/duplicate', authenticateJWT, async (req, res) => {
   }
 });
 
-// PATCH /api/polls/:pollId/disable - admin only
+// PATCH /api/polls/:pollId/disable - admin only---------------------------------------------------------------
 router.patch('/:pollId/disable', authenticateJWT, isAdmin, async (req, res) => {
   const { pollId } = req.params;
   try {

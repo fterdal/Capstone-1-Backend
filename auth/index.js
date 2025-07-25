@@ -57,30 +57,24 @@ router.post("/auth0", async (req, res) => {
       return res.status(400).send({ error: "Auth0 ID is required" });
     }
 
-    // Try to find existing user by auth0Id first
     let user = await User.findOne({ where: { auth0Id } });
 
     if (!user && email) {
-      // If no user found by auth0Id, try to find by email
       user = await User.findOne({ where: { email } });
-
       if (user) {
-        // Update existing user with auth0Id
         user.auth0Id = auth0Id;
         await user.save();
       }
     }
 
     if (!user) {
-      // Create new user if not found
       const userData = {
         auth0Id,
         email: email || null,
         username: username || email?.split("@")[0] || `user_${Date.now()}`,
-        passwordHash: null, 
+        passwordHash: null,
       };
 
-      // Ensure username is unique
       let finalUsername = userData.username;
       let counter = 1;
       while (await User.findOne({ where: { username: finalUsername } })) {
@@ -92,7 +86,6 @@ router.post("/auth0", async (req, res) => {
       user = await User.create(userData);
     }
 
-    // Generate JWT token with auth0Id included
     const token = jwt.sign(
       {
         id: user.id,
@@ -105,16 +98,16 @@ router.post("/auth0", async (req, res) => {
       { expiresIn: "24h" }
     );
 
+    // Set cookie
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+      maxAge: 24 * 60 * 60 * 1000,
     });
 
-    res.send({
+    // Return token in response
+    res.json({
       message: "Auth0 authentication successful",
       user: {
         id: user.id,
@@ -122,12 +115,13 @@ router.post("/auth0", async (req, res) => {
         auth0Id: user.auth0Id,
         email: user.email,
         role: user.role,
+        imageUrl: user.imageUrl
       },
       token: token
     });
   } catch (error) {
     console.error("Auth0 authentication error:", error);
-    res.sendStatus(500);
+    res.status(500).json({ error: "Authentication failed" });
   }
 });
 

@@ -12,6 +12,15 @@ router.get("/", async (req, res) => {
     const userId = req.user?.id; 
     
     const polls = await Poll.findAll({
+      where: {
+        [Op.or]: [
+          { status: "published" }, // Published polls are visible to everyone (subject to view permissions)
+          { 
+            status: "draft", 
+            creator_id: userId || -1 // Draft polls only visible to their creator
+          }
+        ]
+      },
       include: [
         {
           model: PollOption,
@@ -40,9 +49,15 @@ router.get("/", async (req, res) => {
     const accessiblePolls = [];
     
     for (const poll of polls) {
-      const canView = await checkPollViewPermission(poll, userId);
-      if (canView) {
-        accessiblePolls.push(poll);
+      if (poll.status === "draft") {
+        if (poll.creator_id === userId) {
+          accessiblePolls.push(poll);
+        }
+      } else {
+        const canView = await checkPollViewPermission(poll, userId);
+        if (canView) {
+          accessiblePolls.push(poll);
+        }
       }
     }
 

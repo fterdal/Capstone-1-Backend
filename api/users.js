@@ -130,7 +130,7 @@ router.patch("/:id", async (req, res) => {
     const updatedUser = await User.findByPk(userId, {
       include: [{
         model: Poll,
-        include: ['pollOptions'] 
+        include: ['PollOptions'] 
       }],
       attributes: { exclude: ['passwordHash'] }
     });
